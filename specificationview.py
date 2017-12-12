@@ -43,9 +43,9 @@ def getconstellationoutput(repo, userid):
 def getconstellationinput(repo, userid):
     specification, categories, glyphs, partslibrarydict = buildspecification(repo)
     constellation_parameter = {}
-    constellation_parameter['specification']= specification #json.dumps(specification)
+    constellation_parameter['specification']= specification 
     constellation_parameter['categories'] = json.dumps(categories)
-    constellation_parameter['library'] = glyphs #json.dumps(glyphs)
+    constellation_parameter['library'] = glyphs
     constellation_parameter['number'] = '2.0'
     constellation_parameter['name'] = 'specificationname'
     constellation_parameter['clientid'] = userid
@@ -63,13 +63,6 @@ def getconstellationinput(repo, userid):
 
 
 def buildspecification(repo):
-
-    #specificationstring = '{{' + \
-    #                      'HeadToHead2Prom . ' + \
-    #                      'HeadToHead2RBS' + \
-    #                      '} . {' + \
-    #                      'HeadToHead2CDS . ' + \
-    #                      'HeadToHead2Term }}'
 
     specificationstring = '{{' + \
                           'promoter . ' + \
@@ -104,38 +97,43 @@ def buildspecification(repo):
                 if collectionname in collection['name']:
                     collectionid = collection['idcollection']
 
-        partresults = [cx for cx in repo['cxref'] if cx['cxrefpk']['collectionid'] == collectionid]
-        for cxref in partresults:
+                    partresults = [cx for cx in repo['cxref'] if cx['cxrefpk']['collectionid'] == collectionid]
 
-            if cxref['objecttype'].lower() == 'part':
-                partid = cxref['cxrefpk']['objectid']
-                part = [part for part in repo['parts'] if part['idpart'] == partid][0]
+                    if len(partresults) == 0:
+                        continue
 
-                if 'nucseq' in part:
-                    tmpname = part['name'].strip()
-                    tmpname = tmpname.replace(' ', '_')
-                    categories[collectionname].append(tmpname)
-                else:
-                    print('nucseq is not in part')
+                    print('num ' + collectionname + ' partresults: ' + str(len(partresults)))
+                    for cxref in partresults:
 
-                if part['idpart'] not in referredparts:
-                    if 'nucseq' in part:
-                        #family = getpartfamily(repo, part)
-                        feature = getpartfeature(repo, part)
+                        if cxref['objecttype'].lower() == 'part':
+                            partid = cxref['cxrefpk']['objectid']
+                            part = [part for part in repo['parts'] if part['idpart'] == partid][0]
 
-                        if 'forcolor' not in feature:
-                            forcolornum = '13'
+                            if 'nucseq' in part:
+                                tmpname = part['name'].strip()
+                                tmpname = tmpname.replace(' ', '_')
+                                categories[collectionname].append(tmpname)
+                            else:
+                                print('nucseq is not in part')
+
+                            if part['idpart'] not in referredparts:
+                                if 'nucseq' in part:
+                                    #family = getpartfamily(repo, part)
+                                    feature = getpartfeature(repo, part)
+
+                                    if 'forcolor' not in feature:
+                                        forcolornum = '13'
+                                    else:
+                                        forcolornum = str(feature['forcolor'] % 14)
+
+                                    partlibrarystring = partlibrarystring + '"' + part['name'] + ' ' + \
+                                                      forcolornum + ' ' + part['nucseq']['sequence'].strip().lower() + '"\n'
+                                    partslibrarydict[part['name']] = part['nucseq']['sequence'].strip().lower()
+                                    #print('adding to library: ' + part['nucseq']['sequence'].strip().lower())
+
+                                    referredparts.append(part['idpart'])
                         else:
-                            forcolornum = str(feature['forcolor'] % 14)
-
-                        partlibrarystring = partlibrarystring + '"' + part['name'] + ' ' + \
-                                          forcolornum + ' ' + part['nucseq']['sequence'].strip().lower() + '"\n'
-                        partslibrarydict[part['name']] = part['nucseq']['sequence'].strip().lower()
-                        #print('adding to library: ' + part['nucseq']['sequence'].strip().lower())
-
-                        referredparts.append(part['idpart'])
-            else:
-                print('unprocessed cxref object type is ' + cxref['objecttype'])
+                            print('unprocessed cxref object type is ' + cxref['objecttype'])
 
     partglyphs = partlibrarystring
 
@@ -177,6 +175,7 @@ def getpartfeature(repo, part):
 
 # TODO - userid v authorid - why are two used? use one instead?
 def saveGFF3designs(repo, constellationdict, userid, datecreated, partslibrarydict):
+
     countdesigns = 0
     for design in constellationdict['designs']:
         gff3 = gff3design.makeGFF3design(repo, design, countdesigns, partslibrarydict)

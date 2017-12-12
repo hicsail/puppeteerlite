@@ -23,7 +23,7 @@ def loginview():
     # make 'request.json'
 
     request = buildproject.generatebuildrequest(repo, instanceid, authorid)
-    print('request.json: ', request)
+    #print('request.json: ', request)
     print('Finished building request.json.')
 
     orig_stdout = sys.stdout

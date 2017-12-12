@@ -7,21 +7,22 @@ import zipfile
 import os
 
 
-
+'''
 OVERHANGSFILE = 'CIDAR-MoClo-Library.zip-contents/CIDAR-MoClo-Library/Overhangs.csv'
 VECTORSFILE = 'CIDAR-MoClo-Library.zip-contents/CIDAR-MoClo-Library/Vectors.csv'
 PLASMIDSFILE = 'CIDAR-MoClo-Library.zip-contents/CIDAR-MoClo-Library/Plasmids.csv'
 ZIPFILE = 'CIDAR-MoClo-Library.zip'
+'''
 
-
-#ZIPFILE = 'Head2Head.zip'
+ZIPFILE = 'HeadtoHead2.zip'
 UNZIPFOLDER = ZIPFILE + '-contents'
+HOMEFOLDER = ZIPFILE.strip('.zip')
 FILEFORMAT = 'gb'
 
 
-#OVERHANGSFILE = UNZIPFOLDER + '/CIDAR-MoClo-Library/Overhangs.csv'
-#VECTORSFILE = UNZIPFOLDER + '/CIDAR-MoClo-Library/Vectors.csv'
-#PLASMIDSFILE = UNZIPFOLDER + '/CIDAR-MoClo-Library/Plasmids.csv'
+OVERHANGSFILENAME = 'Overhangs.csv'
+VECTORSFILENAME = 'Vectors.csv'
+PLASMIDSFILENAME = 'Plasmids.csv'
 
 
 DATECREATED = datetime.date.today()
@@ -33,16 +34,68 @@ def makerepo(instanceid, authorid):
     setdefaultformat(repo);
     project = makeproject(repo, instanceid, authorid);
 
-    unzipfile();
-    #directories = os.listdir(UNZIPFOLDER)
-    #for dir in directories:
-    #    os.chdir(dir)
-    #    if
+    unzipfile()
 
-    processoverhangs(repo, project, instanceid, authorid);
-    processvectors(repo, project, instanceid, authorid);
-    processplasmids(repo, project, instanceid, authorid);
+    origdirectory = os.getcwd()
+    os.chdir(UNZIPFOLDER + '/' + HOMEFOLDER) #cd HeadtoHead2
+    homedir = os.getcwd()
+    directories = os.listdir()
+    if '.DS_Store' in directories:
+        directories.remove('.DS_Store')
+
+    overhangfiles, vectorfiles, plasmidfiles = getfilenames(homedir, directories)
+
+    processoverhangs(repo, project, overhangfiles, instanceid, authorid);
+    print('1 did overhangs')
+    processvectors(repo, project, vectorfiles, directories, instanceid, authorid);
+    print('2 did vectors')
+    processplasmids(repo, project, plasmidfiles, directories, instanceid, authorid);
+    print('3 did plasmids')
+
+    os.chdir(origdirectory)
+
     return repo
+
+
+def getfilenames(homedir, subdirectories):
+
+    overhangfiles = []
+    vectorfiles = []
+    plasmidfiles = []
+
+    for subdir in subdirectories:
+        os.chdir(subdir)
+        files = os.listdir()
+        overhangfiles.append([subdir + '/' + f for f in files if OVERHANGSFILENAME in f][0])
+        vectorfiles.append([subdir + '/' + f for f in files if VECTORSFILENAME in f][0])
+        plasmidfiles.append([subdir + '/' + f  for f in files if PLASMIDSFILENAME in f][0])
+        os.chdir(homedir)
+
+    return overhangfiles, vectorfiles, plasmidfiles
+
+
+    '''
+    for subdir in subdirectories:
+        print('subdir is ' + subdir)
+        os.chdir(subdir)
+        files = os.listdir()
+        overhangsfile = [f for f in files if OVERHANGSFILENAME in f][0]
+
+        vectorsfile = [f for f in files if VECTORSFILENAME in f][0]
+
+        plasmidsfile = [f for f in files if PLASMIDSFILENAME in f][0]
+
+        processoverhangs(repo, project, overhangsfile, instanceid, authorid);
+        print('1 did overhangs')
+        processvectors(repo, project, vectorsfile, subdir, instanceid, authorid);
+        print('2 did vectors')
+
+        processplasmids(repo, project, plasmidsfile, subdir, instanceid, authorid);
+        print('3 did plasmids')
+        os.chdir(homedir)
+    '''
+
+
 
 
 def initrepository():
@@ -80,208 +133,244 @@ def makeproject(repo, instanceid, authorid):
     return project
 
 
-def processoverhangs(repo, project, instanceid, authorid):
-    with open(OVERHANGSFILE) as file:
-        inputlines = file.readlines()
+def processoverhangs(repo, project, overhangsfiles, instanceid, authorid):
 
-    validateinputfile(inputlines[0], OVERHANGSFILE);
+    for overhangsfile in overhangsfiles:
+        with open(overhangsfile) as file:
+            inputlines = file.readlines()
 
-    collectionid = uuid.uuid4()
+        validateinputfile(inputlines[0], overhangsfile);
 
-    collections = {}
-    collections['authorid'] = authorid
-    collections['datecreated'] = DATECREATED
-    collections['description'] ='Overhangs described in ' + instanceid
-    collections['name'] = 'overhang-' + instanceid
-    collections['idcollection'] = collectionid
+        if len(inputlines) <= 1:
+            return
 
-    repo['collections'].append(collections)
+        collectionid = uuid.uuid4()
 
-    repository.addobjecttocollection(repo, collectionid, project['idcollection'], 'COLLECTION', authorid, DATECREATED);
+        collections = {}
+        collections['authorid'] = authorid
+        collections['datecreated'] = DATECREATED
+        collections['description'] ='Overhangs described in ' + instanceid
+        collections['name'] = 'overhang-' + instanceid
+        collections['idcollection'] = collectionid
 
-    for line in inputlines:
-        if ',' not in line:
-            continue;
+        repo['collections'].append(collections)
 
-        tokens = line.split(',')
-        featurename = 'overhang-' + tokens[0]
-        featuresequence = tokens[1].lower()
-        featureid = repository.createfeature(repo, featurename, featuresequence, 'overhang', DATECREATED);
-        repository.addobjecttocollection(repo, collectionid, featureid, 'FEATURE', authorid, DATECREATED);
+        repository.addobjecttocollection(repo, collectionid, project['idcollection'], 'COLLECTION', authorid, DATECREATED);
 
+        for line in inputlines:
+            if ',' not in line:
+                continue;
 
-
-def processvectors(repo, project, instanceid, authorid):
-    with open(VECTORSFILE) as file:
-        lines = file.readlines()
-    validateinputfile(lines[0], VECTORSFILE);
-
-    # TODO remove note: vectors is a 'collection table'
-    vectors = {}
-    vectors['authorid'] = authorid
-    vectors['datecreated'] = DATECREATED
-    vectors['description'] = 'Vectors described in ' + instanceid
-    collectionid = uuid.uuid4()
-    vectors['idcollection'] = collectionid
-    repo['collections'].append(vectors)
-    repository.addobjecttocollection(repo, project['idcollection'], vectors['idcollection'], 'COLLECTION', authorid, DATECREATED)
-
-    lineno = 0
-    for line in lines[1:]:
-
-        tokens = line.split(',')
-        if len(tokens) < 5:
-            raise ValueError('The Values.csv file does not have the required number of tokens on line ' + lineno)
-
-        vectorfilename = tokens[0]
-        vectorname = 'Vector-' + tokens[1]
-        resistancename = 'Resistance-' + tokens[2]
-        fiveprimeoverhangname = 'Overhang-' + tokens[3]
-        threeprimeoverhangname = 'Overhang-' + tokens[4]
-
-        if len(tokens) > 5:
-            description = tokens[5]
-        else:
-            description = 'From ' + vectorfilename + ': ' + \
-                          fiveprimeoverhangname + ', ' + \
-                          threeprimeoverhangname + ', ' + resistancename;
-
-        # TODO - check that genbankfile works
-        vectorsequence = readgenbankfile(UNZIPFOLDER + '/CIDAR-MoClo-Library/' + vectorfilename)
-
-        vector = {}
-        vector['authorid'] = authorid
-        vector['datecreated'] = DATECREATED
-        vector['description'] = description
-        vector['name'] = vectorname
-        vectorid = uuid.uuid4()
-        vector['idvector'] = vectorid
-
-        nucseq = {}
-        nucseq['datecreated'] = DATECREATED
-        nucseq['idnucseq'] = vectorid
-        nucseq['sequence'] = vectorsequence
-
-        vector['nucseq'] = nucseq
-        vector['iscircular'] = True
-
-        repo['nucseq'].append(nucseq)
-        repo['vectors'].append(vector)
-
-        ft1 = {}
-        ft2 = {}
-        foundfeature1 = False
-        foundfeature2 = False
-
-        overhangfeatures = repository.getfeaturesbyfamilyname(repo, 'overhang')
-
-        for feature in overhangfeatures:
-
-            #TODO: erase these two debug lines
-            if not feature['nucseq']['sequence']:
-                print("ERROR - no feature['nucseq']['sequence']")
-
-            if not foundfeature1 and feature['name'].upper() == fiveprimeoverhangname.upper():
-                position = repository.getoverhangpositioninvector(repo, vectorsequence, feature['nucseq']['sequence'])
-                repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, DATECREATED)
-                ft1 = feature
-                foundfeature1 = True
-
-            if not foundfeature2 and feature['name'].upper() == threeprimeoverhangname.upper():
-                position = repository.getoverhangpositioninvector(repo, vectorsequence, feature['nucseq']['sequence'])
-                repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, DATECREATED)
-                ft2 = feature
-                foundfeature2 = True
+            tokens = line.split(',')
+            featurename = 'overhang-' + tokens[0]
+            featuresequence = tokens[1].lower()
+            featureid = repository.createfeature(repo, featurename, featuresequence, 'overhang', DATECREATED);
+            repository.addobjecttocollection(repo, collectionid, featureid, 'FEATURE', authorid, DATECREATED);
 
 
-        if not foundfeature1 or not foundfeature2:
-            raise ValueError('The overhangs caused by vector ' + vectorname + ' were not defined in the overhangs manifest.')
 
-        foundfeature = False
+def processvectors(repo, project, vectorsfiles, directories, instanceid, authorid):
 
-        for feature in repository.getfeaturesbyfamilyname(repo, 'resistance'):
-            if feature['name'].upper() == resistancename.upper():
-                position = nucseq['sequence'].find(feature['nucseq']['sequence'])
-                repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, DATECREATED)
-                foundfeature = True
+    for vectorsfile in vectorsfiles:
+        with open(vectorsfile) as file:
+            lines = file.readlines()
+        validateinputfile(lines[0], vectorsfile);
 
-        if not foundfeature:
-            overhangpos = repository.getoverhangpositioninvector(repo, vectorsequence, ft2['nucseq']['sequence'])
-            if overhangpos < 0:
-                raise ValueError('The overhang ' + ft2['name'] + ' could not be found in the vector ' + vectorname)
-            startpos = overhangpos + len(ft2['nucseq']['sequence']) + 1
-            resistancesequence = nucseq['sequence'][startpos: len(nucseq['sequence'])]
-            f = repository.createfeature(repo, resistancename, resistancesequence, 'resistance', DATECREATED)
-            position = nucseq['sequence'].find(f['nucseq']['sequence'])
-            repository.addfeaturetonucseq(repo, vectorname, nucseq, f, position, authorid, DATECREATED)
-            repository.addobjecttocollection(repo, collectionid, f['idfeature'], 'FEATURE', authorid, DATECREATED)
+        if len(lines) <= 1:
+            continue #return
 
-        repository.addobjecttocollection(repo, collectionid, vectorid, 'VECTOR', authorid, DATECREATED)
-        lineno += 1
+        vectors = {}
+        vectors['authorid'] = authorid
+        vectors['datecreated'] = DATECREATED
+        vectors['description'] = 'Vectors described in ' + instanceid
+        collectionid = uuid.uuid4()
+        vectors['idcollection'] = collectionid
+        repo['collections'].append(vectors)
+        repository.addobjecttocollection(repo, project['idcollection'], vectors['idcollection'], 'COLLECTION', authorid, DATECREATED)
+
+        lineno = 0
+        for line in lines[1:]:
+            tokens = line.split(',')
+            tokens = [t.strip() for t in tokens if len(t.strip()) > 0]
+            if len(tokens) < 5:
+                raise ValueError('The Values.csv file does not have the required number of tokens on line ' + lineno)
+
+            vectorfilename = tokens[0]
+            vectorname = 'Vector-' + tokens[1]
+            resistancename = 'Resistance-' + tokens[2]
+            fiveprimeoverhangname = 'Overhang-' + tokens[3]
+            threeprimeoverhangname = 'Overhang-' + tokens[4]
+
+            if len(tokens) > 5:
+                description = tokens[5]
+            else:
+                description = 'From ' + vectorfilename + ': ' + \
+                              fiveprimeoverhangname + ', ' + \
+                              threeprimeoverhangname + ', ' + resistancename;
+
+            for directory in directories:
+                files = os.listdir(directory)
+                if vectorfilename in files:
+                    vectorsequence = readgenbankfile(directory + '/' + vectorfilename)
+                    break
+
+            # TODO - check that genbankfile works
+            #vectorsequence = readgenbankfile(directory + '/' + vectorfilename)
+
+            vector = {}
+            vector['authorid'] = authorid
+            vector['datecreated'] = DATECREATED
+            vector['description'] = description
+            vector['name'] = vectorname
+            vectorid = uuid.uuid4()
+            vector['idvector'] = vectorid
+
+            nucseq = {}
+            nucseq['datecreated'] = DATECREATED
+            nucseq['idnucseq'] = vectorid
+            nucseq['sequence'] = vectorsequence
+
+            vector['nucseq'] = nucseq
+            vector['iscircular'] = True
+
+            repo['nucseq'].append(nucseq)
+            repo['vectors'].append(vector)
+
+            ft1 = {}
+            ft2 = {}
+            foundfeature1 = False
+            foundfeature2 = False
+
+            overhangfeatures = repository.getfeaturesbyfamilyname(repo, 'overhang')
+
+            for feature in overhangfeatures:
+
+                #TODO: erase these two debug lines
+                if not feature['nucseq']['sequence']:
+                    print("ERROR - no feature['nucseq']['sequence']")
+
+                if not foundfeature1 and feature['name'].upper() == fiveprimeoverhangname.upper():
+                    position = repository.getoverhangpositioninvector(repo, vectorsequence, feature['nucseq']['sequence'])
+                    repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, DATECREATED)
+                    ft1 = feature
+                    foundfeature1 = True
+
+                if not foundfeature2 and feature['name'].upper() == threeprimeoverhangname.upper():
+                    position = repository.getoverhangpositioninvector(repo, vectorsequence, feature['nucseq']['sequence'])
+                    repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, DATECREATED)
+                    ft2 = feature
+                    foundfeature2 = True
 
 
-def processplasmids(repo, project, instanceid, authorid):
-    with open(PLASMIDSFILE) as file:
-        lines = file.readlines()
-    validateinputfile(lines[0], PLASMIDSFILE);
+            if not foundfeature1 or not foundfeature2:
+                raise ValueError('The overhangs caused by vector ' + vectorname + ' were not defined in the overhangs manifest.')
 
-    plasmids = {}
-    plasmids['authorid'] = authorid
-    plasmids['datecreated'] = DATECREATED
-    plasmids['description'] = 'Parts described in ' + instanceid
-    plasmids['name'] = 'part-' + instanceid
-    collectionid = uuid.uuid4()
-    plasmids['idcollection'] = collectionid
-    repo['collections'].append(plasmids)
+            foundfeature = False
 
-    #k: family name, v: collection
-    allcollections = createcollectionsbyfamily(repo, project, instanceid, authorid)
+            for feature in repository.getfeaturesbyfamilyname(repo, 'resistance'):
+                if feature['name'].upper() == resistancename.upper():
+                    position = nucseq['sequence'].find(feature['nucseq']['sequence'])
+                    repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, DATECREATED)
+                    foundfeature = True
 
-    lineno = 1
-    for line in lines[1:]:
-        tokens = line.split(',')
-        if len(tokens) < 4:
-            raise ValueError('The plasmids.csv file does not comply with the format.'
-                             'Line ', lineno, ' has ', tokens.len(),
-                             ' tokens, but should have at least 4.')
+            if not foundfeature:
+                overhangpos = repository.getoverhangpositioninvector(repo, vectorsequence, ft2['nucseq']['sequence'])
+                if overhangpos < 0:
+                    raise ValueError('The overhang ' + ft2['name'] + ' could not be found in the vector ' + vectorname)
+                startpos = overhangpos + len(ft2['nucseq']['sequence']) + 1
+                resistancesequence = nucseq['sequence'][startpos: len(nucseq['sequence'])]
+                f = repository.createfeature(repo, resistancename, resistancesequence, 'resistance', DATECREATED)
+                position = nucseq['sequence'].find(f['nucseq']['sequence'])
+                repository.addfeaturetonucseq(repo, vectorname, nucseq, f, position, authorid, DATECREATED)
+                repository.addobjecttocollection(repo, collectionid, f['idfeature'], 'FEATURE', authorid, DATECREATED)
 
-        plasmidfilename = tokens[0]
-        partfamily = tokens[1].lower()
-        partname = 'Part-' + tokens[2]
-        vectorname = 'Vector-' + tokens[3]
-
-        if len(tokens) > 4:
-            description = tokens[4]
-        else:
-            description = 'From ' + plasmidfilename + ' part ' + partname + ' vector ' \
-                          + vectorname + ' of type ' + partfamily + '.'
-
-        plasmidsequence = readgenbankfile(UNZIPFOLDER + '/CIDAR-MoClo-Library/' + plasmidfilename)
-
-        if not plasmidsequence:
-            raise ValueError('Could not retrieve plasmid sequence.')
-
-        partsequence = getpartsequence(repo, plasmidsequence, vectorname)
-
-        part = repository.persistpart(repo, partname, partsequence, description, True, authorid, DATECREATED)
-        persistpartoverhangannotations(repo, vectorname, part, authorid)
-        persistpartfeature(repo, vectorname, part, partfamily, authorid)
-
-        repository.addobjecttocollection(repo, collectionid, part['idpart'], 'PART', authorid, DATECREATED)
-
-        #TODO - I add new families, instead of raising an error.  See Java line 702+
-        if partfamily.lower() not in allcollections:
-            addnewfamilytoallcollections(repo, partfamily, allcollections, project, instanceid, authorid)
-
-        repository.addobjecttocollection(repo,
-                                        allcollections[partfamily]['idcollection'], part['idpart'],
-                                        'PART', authorid, DATECREATED)
+            repository.addobjecttocollection(repo, collectionid, vectorid, 'VECTOR', authorid, DATECREATED)
+            lineno += 1
 
 
-        vector = [v for v in repo['vectors'] if v['name'].lower() == vectorname.lower()][0]
-        repository.persistplasmid(repo, 'PLASMID-' + tokens[2], part, vector, authorid, DATECREATED)
+def processplasmids(repo, project, plasmidsfiles, directories, instanceid, authorid):
 
-        lineno += 1
+    for plasmidsfile in plasmidsfiles:
+
+        with open(plasmidsfile) as file:
+            lines = file.readlines()
+
+        validateinputfile(lines[0], plasmidsfile);
+
+        if len(lines) <= 1:
+            continue #return
+
+
+        plasmids = {}
+        plasmids['authorid'] = authorid
+        plasmids['datecreated'] = DATECREATED
+        plasmids['description'] = 'Parts described in ' + instanceid
+        plasmids['name'] = 'part-' + instanceid
+        collectionid = uuid.uuid4()
+        plasmids['idcollection'] = collectionid
+        repo['collections'].append(plasmids)
+
+        #k: family name, v: collection
+        allcollections = createcollectionsbyfamily(repo, project, instanceid, authorid)
+
+        lineno = 1
+        for line in lines[1:]:
+            tokens = line.split(',')
+            tokens = [t.strip() for t in tokens if len(t.strip()) > 0]
+            if len(tokens) < 4:
+                raise ValueError('The plasmids.csv file does not comply with the format.'
+                                 'Line ', lineno, ' has ', tokens.len(),
+                                 ' tokens, but should have at least 4.')
+
+            plasmidfilename = tokens[0]
+            partfamily = tokens[1].lower()
+            partname = 'Part-' + tokens[2]
+            vectorname = 'Vector-' + tokens[3]
+
+            if len(tokens) > 4:
+                description = tokens[4]
+            else:
+                description = 'From ' + plasmidfilename + ' part ' + partname + ' vector ' \
+                              + vectorname + ' of type ' + partfamily + '.'
+
+            for directory in directories:
+                files = os.listdir(directory)
+                if plasmidfilename in files:
+                    plasmidsequence = readgenbankfile(directory + '/' + plasmidfilename)
+                    break
+
+            if not plasmidsequence:
+                raise ValueError('Could not retrieve plasmid sequence.')
+
+            partsequence = getpartsequence(repo, plasmidsequence, vectorname)
+
+            part = repository.persistpart(repo, partname, partsequence, description, True, authorid, DATECREATED)
+            persistpartoverhangannotations(repo, vectorname, part, authorid)
+            persistpartfeature(repo, vectorname, part, partfamily, authorid)
+
+            #if 'rbs' in partfamily or 'cds' in partfamily:
+            #    print('fam: ' + partfamily + ' adding PART object to collection: ' + str(collectionid))
+
+            repository.addobjecttocollection(repo, collectionid, part['idpart'], 'PART', authorid, DATECREATED)
+
+            #TODO - I add new families, instead of raising an error.  See Java line 702+
+
+            if partfamily.lower() not in allcollections:
+                addnewfamilytoallcollections(repo, partfamily, allcollections, project, instanceid, authorid)
+
+            #if 'rbs' in partfamily or 'cds' in partfamily:
+            #    print('fam: ' + partfamily + ' adding ' +
+            #          partfamily + ' object to collection: ' + str(allcollections[partfamily]['idcollection']))
+
+            repository.addobjecttocollection(repo,
+                                            allcollections[partfamily]['idcollection'], part['idpart'],
+                                            'PART', authorid, DATECREATED)
+
+
+            vector = [v for v in repo['vectors'] if v['name'].lower() == vectorname.lower()][0]
+            repository.persistplasmid(repo, 'PLASMID-' + tokens[2], part, vector, authorid, DATECREATED)
+
+            lineno += 1
 
 
 
@@ -345,6 +434,7 @@ def persistpartoverhangannotations(repo, vectorname, part, authorid):
 
 
 def persistpartfeature(repo, vectorname, part, familyname, authorid):
+
     nsa, fiveprimeoverhang, threeprimeoverhang = getnucseqannotations(repo, vectorname)
 
     partseq = part['nucseq']['sequence'].strip().lower()

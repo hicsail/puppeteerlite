@@ -16,6 +16,9 @@ def generatebuildrequest(repo, instanceid, authorid):
     vectorlibrary = []
     designlist = []
 
+    if len(repo['gff3designs']) == 0:
+        print('NO GFF3 DESIGNS.')
+
     for gff3design in repo['gff3designs']: # TODO originally parts selected, not design names
 
         constituents = repository.getconstituentparts(repo, gff3design['name'])
@@ -38,10 +41,6 @@ def generatebuildrequest(repo, instanceid, authorid):
 
         for part in constituents:
             eligiblevectors = repository.getvectorsbypart(repo, part)
-            print('part is ' + part['name'] + ' and evs are: ')
-            for v in eligiblevectors:
-                print(v['name'])
-                print('Printed eligible vectors.')
             ev = eligiblevectors[0]
             if ev:
                 if ev['name'] not in vectorssofar:
