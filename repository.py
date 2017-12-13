@@ -79,7 +79,6 @@ def addobjecttocollection(repo, collectionid, objectid, objecttype, authorid, da
     cxref['xrefid'] =uuid.uuid4()
     repo['cxref'].append(cxref)
 
-    print('added id to cxref: ' + str(collectionid))
 
 
 def getfeaturesbyfamilyname(repo, familyname):

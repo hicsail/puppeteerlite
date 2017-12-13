@@ -7,13 +7,6 @@ import zipfile
 import os
 
 
-'''
-OVERHANGSFILE = 'CIDAR-MoClo-Library.zip-contents/CIDAR-MoClo-Library/Overhangs.csv'
-VECTORSFILE = 'CIDAR-MoClo-Library.zip-contents/CIDAR-MoClo-Library/Vectors.csv'
-PLASMIDSFILE = 'CIDAR-MoClo-Library.zip-contents/CIDAR-MoClo-Library/Plasmids.csv'
-ZIPFILE = 'CIDAR-MoClo-Library.zip'
-'''
-
 ZIPFILE = 'HeadtoHead2.zip'
 UNZIPFOLDER = ZIPFILE + '-contents'
 HOMEFOLDER = ZIPFILE.strip('.zip')
@@ -46,11 +39,8 @@ def makerepo(instanceid, authorid):
     overhangfiles, vectorfiles, plasmidfiles = getfilenames(homedir, directories)
 
     processoverhangs(repo, project, overhangfiles, instanceid, authorid);
-    print('1 did overhangs')
     processvectors(repo, project, vectorfiles, directories, instanceid, authorid);
-    print('2 did vectors')
     processplasmids(repo, project, plasmidfiles, directories, instanceid, authorid);
-    print('3 did plasmids')
 
     os.chdir(origdirectory)
 
@@ -72,29 +62,6 @@ def getfilenames(homedir, subdirectories):
         os.chdir(homedir)
 
     return overhangfiles, vectorfiles, plasmidfiles
-
-
-    '''
-    for subdir in subdirectories:
-        print('subdir is ' + subdir)
-        os.chdir(subdir)
-        files = os.listdir()
-        overhangsfile = [f for f in files if OVERHANGSFILENAME in f][0]
-
-        vectorsfile = [f for f in files if VECTORSFILENAME in f][0]
-
-        plasmidsfile = [f for f in files if PLASMIDSFILENAME in f][0]
-
-        processoverhangs(repo, project, overhangsfile, instanceid, authorid);
-        print('1 did overhangs')
-        processvectors(repo, project, vectorsfile, subdir, instanceid, authorid);
-        print('2 did vectors')
-
-        processplasmids(repo, project, plasmidsfile, subdir, instanceid, authorid);
-        print('3 did plasmids')
-        os.chdir(homedir)
-    '''
-
 
 
 

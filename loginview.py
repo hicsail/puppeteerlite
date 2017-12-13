@@ -11,20 +11,14 @@ def loginview():
     instanceid = 'instanceid'
     datecreated = datetime.date.today()
 
-    # Parse csv files, populate 'repo' dict
+    # Parse input files, populate 'repo' dict
     repo = modularcloning.makerepo(instanceid, authorid);
 
-    # Get GFF3 designs, make compositexref objects, add to 'repo'
+    # Get Constellation results, add to 'repo' dict
     specificationview.setspecification(repo, authorid, datecreated);
 
-    # TODO: we substitute all parts for user-selected parts
-    #selectedparts = repo['parts']
-
-    # make 'request.json'
-
+    # Create output json
     request = buildproject.generatebuildrequest(repo, instanceid, authorid)
-    #print('request.json: ', request)
-    print('Finished building request.json.')
 
     orig_stdout = sys.stdout
     f = open('request.json', 'w')
@@ -32,6 +26,8 @@ def loginview():
     print(request)
     sys.stdout = orig_stdout
     f.close()
+
+    print('Finished!  Results are in request.json.')
 
 
 loginview()

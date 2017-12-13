@@ -189,13 +189,8 @@ def makeplasmid(repo, constituentparts, part, authorid, datecreated):
     availresistances = findsatisfiableresistance(0, resistancesforeachpart, allresistances)
 
     if availresistances:
-        for res in availresistances:
-            print('resistances available: ' + res['name'])
         eligiblevectors = repository.findvectorsbyoverhangresistance(repo, fpo, tpo, availresistances)
         if eligiblevectors:
-            for vec in eligiblevectors:
-                print('Vector available: ' + vec['name'] + ' ' + fpo['name'] + ' ' + tpo['name'])
-
             return repository.persistplasmid(repo, 'PLASMID-' + part['name'], part, eligiblevectors[0], authorid, datecreated)
 
     return {}

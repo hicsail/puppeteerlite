@@ -16,13 +16,12 @@ def generatebuildrequest(repo, instanceid, authorid):
     vectorlibrary = []
     designlist = []
 
-    if len(repo['gff3designs']) == 0:
-        print('NO GFF3 DESIGNS.')
+
 
     for gff3design in repo['gff3designs']: # TODO originally parts selected, not design names
 
         constituents = repository.getconstituentparts(repo, gff3design['name'])
-        print('len of constituents: ', len(constituents), ' design name is ', gff3design['name'])
+
 
         partnames = {}
         position = 0

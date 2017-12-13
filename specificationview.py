@@ -43,7 +43,7 @@ def getconstellationoutput(repo, userid):
 def getconstellationinput(repo, userid):
     specification, categories, glyphs, partslibrarydict = buildspecification(repo)
     constellation_parameter = {}
-    constellation_parameter['specification']= specification 
+    constellation_parameter['specification']= specification
     constellation_parameter['categories'] = json.dumps(categories)
     constellation_parameter['library'] = glyphs
     constellation_parameter['number'] = '2.0'
@@ -102,7 +102,6 @@ def buildspecification(repo):
                     if len(partresults) == 0:
                         continue
 
-                    print('num ' + collectionname + ' partresults: ' + str(len(partresults)))
                     for cxref in partresults:
 
                         if cxref['objecttype'].lower() == 'part':
