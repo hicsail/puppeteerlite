@@ -20,7 +20,7 @@ def makerepo(archive, instanceid, authorid, date):
     unzipfile(archive)
     archivefilepath = os.getcwd()
 
-    subdirectoriesfolder, subdirectories = getsubdirectories(archive)
+    subdirectoriesfolder, subdirectories = getsubdirectories(str(archive))
     overhangfiles, vectorfiles, plasmidfiles = getfilenames(subdirectories, subdirectoriesfolder)
 
     processoverhangs(repo, project, overhangfiles, instanceid, authorid, date);
