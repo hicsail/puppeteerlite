@@ -247,8 +247,8 @@ def getconstituentparts(repo, designname):
 
 def getvectorsbypart(repo, part):
     plasmids = [p for p in repo['plasmids'] if p['part']['idpart'] == part['idpart']]
-    partvectors = [plasmid['vector'] for plasmid in plasmids]
-    return partvectors
+    vectors = [plasmid['vector'] for plasmid in plasmids]
+    return vectors
 
 
 def getmoclovectordigestionlocations(repo, vector):

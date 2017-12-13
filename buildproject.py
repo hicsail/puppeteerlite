@@ -29,16 +29,18 @@ def generatebuildrequest(repo, concentration, concentration_unit, volume_unit, a
         design['partPositionMap'] = partnames
         designlist.append(design)
 
-        for part in constituents:
-            eligiblevectors = repository.getvectorsbypart(repo, part)
-            ev = eligiblevectors[0]
-            if ev:
-                if ev['name'] not in vectorssofar:
-                    v = makevector(repo, ev, concentration, concentration_unit, volume_unit)
-                    vectorlibrary.append(v)
-                    vectorssofar[ev['name']] = ev
+        # TODO - original processed vectors in 'repository.getvectorsbypart(repo, part)'
+        # But the backbone vector (first vector in vectors.csv) is not associated with a part.
+        # So, here, we use the list of all vectors (repo['vectors']).
+        allvectors = repo['vectors']
+        for v in allvectors:
+            if v['name'] not in vectorssofar:
+                vectorssofar[v['name']] = v
+                vec = makevector(repo, v, concentration, concentration_unit, volume_unit)
+                vectorlibrary.append(vec)
 
-        design['vectorName'] = ev['name'] + '-' + str(ev['idvector'])
+        backbone_vector = allvectors[0]
+        design['vectorName'] = backbone_vector['name'] + '-' + str(backbone_vector['idvector'])
 
         buildrequest = {}
         buildrequest['partSamples'] = partslibrary
