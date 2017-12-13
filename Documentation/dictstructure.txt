@@ -1,6 +1,8 @@
 
+### REPO ###
+
 repo = {
-    # collections dict includes 'projects'
+
     'collections': [
         {'authorid': '',
          'datecreated':'',
@@ -12,13 +14,13 @@ repo = {
     'compositexrefs' : [
         {'idcomposite': '',
          'position':'',
-         'childpart': {},       # part in design
-         'parentpart':{}}],     # parts from repo with same name as child part
+         'childpart': {},        # FASTA part based on Constellation output designs - one FASTA per design
+         'parentpart':{}}],      # Repo parts with same name as parts in Constellation output designs
 
-    'cxref': [                  # collections xref
+    'cxref': [                   # collections xref
         {'authorid':''
          #'collectionid' :'',
-         'cxrefpk': {           # cxrefpk dict
+         'cxrefpk': {            # cxrefpk dict
             'collectionid': '',
             'objectid': '' },
          'datecreated' :'',
@@ -48,10 +50,10 @@ repo = {
          'forcolor':'',
          'genbankid':'',
          'idfeature': '',
-         'iscds': '',           # TODO null or not initialized
+         'iscds': '',             # TODO null or not initialized
          'lastmodified':'',
          'name':'',
-         'nucseq': {},          # nucseq dict
+         'nucseq': {},            # nucseq dict
          'pdbid':'',
          'revcolor': '',
          'riskgroup':'',
@@ -61,24 +63,24 @@ repo = {
     'ffxref': [
         {'datecreated':'',
          'lastmodified':'',
-         'family' : {},          # family dict
-         'feature': {},          # feature dict
+         'family' : {},           # family dict
+         'feature': {},           # feature dict
          'ffxrefpk': {
-             'featureid' :'',    # ffxrefpk dict
+             'featureid' :'',     # ffxrefpk dict
              'familyid':''} }],
 
     'formats': [
-        {'idformat': '' } ],     # eg, val: 'edu-bu-synbiotools-format-moclo'
+        {'idformat': '' } ],      # eg, val: 'edu-bu-synbiotools-format-moclo'
 
 
-    'nsa': [                     # nucseqannotation
+    'nsa': [                      # nucseqannotation
         {'annotationid': '',
          'authorid': '',
          'datecreated': '',
-         'feature': {},          # feature dict
+         'feature': {},           # feature dict
          'forwardcolor': '',
          'name': '',
-         'nucseq': {},           # nucseq dict
+         'nucseq': {},            # nucseq dict
          'reversecolor': '',
          'starx': '',
          'endx' : '' }],
@@ -92,24 +94,24 @@ repo = {
 
     'parts': [
         {'authorid': '',
-         'basic':'',            # '1' if isbasic else '0'
+         'basic':'',              # '1' if isbasic else '0'
          'datecreated': '',
          'description': '',
-         'format': {},          # formats dict
+         'format': {},            # formats dict
          'idpart': '',
          'name':'',
-         'nucseq': {},          # nucseq dict
+         'nucseq': {},            # nucseq dict
          'riskgroup': '' }],
 
     'plasmids' :[
         {'authorid': '',          # subject dict
          'datecreated': '',
-         'format': {},          # formats dict
+         'format': {},            # formats dict
          'idplasmid' : '',
          'lastmodified':'',
          'name' : '',
-         'part' : {},           # part dict
-         'vector': {}}],         # vector dict
+         'part' : {},             # part dict
+         'vector': {}}],          # vector dict
 
     'vectors': [
         {'authorid': '',
@@ -117,7 +119,7 @@ repo = {
          'description': '',
          'name': '',
          'idvector' :'',
-         'nucseq':{},            # nucseq dict
+         'nucseq':{},             # nucseq dict
          'iscircular': '' }],
 
     'subjects': [
@@ -128,7 +130,7 @@ repo = {
     'gff3designs:': [
         {'constituentparts': [],
          'gff3parts': [],         # list of gff3part dicts
-         'name': '',              # design name
+         'name': '',              # design name, eg 'Design_0'
          #'sequence': '',
         }
     ]
@@ -142,12 +144,11 @@ repo = {
          #'strand': ''
          }
     ]
+}                                 # end 'repo' dict
 
 
 
-
-
-### FASTA  ###
+### FASTAS  ###			  # TODO: assess whether needed
 
 fastas = [
     {'datecreated': '',
@@ -156,7 +157,8 @@ fastas = [
      'nucseq': [],
      'parts': [],
      'persons': [],
-     'repo': []}]
+     'repo': []}
+]
 
 
 
@@ -173,13 +175,14 @@ fastas = [
          'buildmethod': ''
      },
      'partsamples': [],
-     'vectorsamples': [] }]
+     'vectorsamples': []}
+]
 
 
 'design': [
     {'name': '',
      'partpositionmap': {
-         position: name },       # partnames dict
+         position: name },             # partnames dict
      'vectorname': ''}
 ]
 
@@ -187,26 +190,26 @@ fastas = [
     {'fiveprimend': '',
      'fiveprimestart': '',
      'threeprimeend': '',
-     'threeprimestart': ''}]
+     'threeprimestart': ''}
+]
 
 'part': [
     {'concentration': '',
      'concentrationunit': '',
     # 'idpart': '',
      'name':'',
-     'overhangs': {},           # overhangs dict
+     'overhangs': {},                  # overhangs dict
      'sequence': '',
      'volume': '',
-     'volumeunit': ''
-     ''}
+     'volumeunit': ''}
 ]
-
 
 'vector': [
     {'concentration': '',
      #'idvector': '',
      'name': '',
      'overhangs': {},
-     'sequence': ''} ]
+     'sequence': ''} 
+]
 
 

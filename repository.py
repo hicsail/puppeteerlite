@@ -1,24 +1,18 @@
-import pandas as pd
 import uuid
 import random
 import re
 
-from operator import attrgetter
-import plasmidgenbankexporter
-
-
-def createfeature(repo, featurename, featuresequence, familyname, datecreated):
-    featureid = uuid.uuid4()
-
+def createfeature(repo, featurename, featuresequence, familyname, date):
     feature = {}
+    featureid = uuid.uuid4()
     feature['idfeature']= featureid
-    feature['datecreated']=datecreated
+    feature['datecreated']=date
     feature['forcolor']=round(1 + random.random() * 13)
     feature['iscds']= ''
     feature['name']= featurename
 
     nucseq = {}
-    nucseq['datecreated'] =datecreated
+    nucseq['datecreated'] =date
     nucseq['idnucseq']=featureid
     nucseq['sequence']=featuresequence
 
@@ -30,8 +24,8 @@ def createfeature(repo, featurename, featuresequence, familyname, datecreated):
     ffxref = {}
     ffxref['family'] = family
     ffxref['feature'] = feature
-    ffxref['datecreated'] = datecreated
-    ffxref['lastmodified'] = datecreated
+    ffxref['datecreated'] = date
+    ffxref['lastmodified'] = date
 
     ffxrefpk = {}
     ffxrefpk['featureid'] = featureid;
@@ -45,7 +39,6 @@ def createfeature(repo, featurename, featuresequence, familyname, datecreated):
 
 
 def getfamilybyname(repo, familyname):
-
     if repo['families']:
         for fam in repo['families']:
             if 'name' in fam:
@@ -57,15 +50,13 @@ def getfamilybyname(repo, familyname):
 
     family = {}
     family['idfamily'] = familyname #TODO what should id be
-    #print('processing familyname: ' + familyname)
     family['name'] = familyname
     repo['families'].append(family)
     return family
 
 
 
-def addobjecttocollection(repo, collectionid, objectid, objecttype, authorid, datecreated):
-
+def addobjecttocollection(repo, collectionid, objectid, objecttype, authorid, date):
     cxref = {}
     cxrefpk = {}
     cxrefpk['collectionid']=collectionid
@@ -73,33 +64,25 @@ def addobjecttocollection(repo, collectionid, objectid, objecttype, authorid, da
     cxref['cxrefpk'] = cxrefpk
 
     cxref['objecttype'] = objecttype.upper()
-    cxref['datecreated'] = datecreated
+    cxref['datecreated'] = date
     cxref['authorid'] = authorid
-    cxref['lastmodified'] = datecreated
+    cxref['lastmodified'] = date
     cxref['xrefid'] =uuid.uuid4()
     repo['cxref'].append(cxref)
 
 
-
 def getfeaturesbyfamilyname(repo, familyname):
-
     family = getfamilybyname(repo, familyname);
-    #print('families returned from getfamilybyname: ', len(family))
-
     featurefamilies = [ffx for ffx in repo['ffxref'] if ffx['family']['idfamily'] == family['idfamily']]
-
     features = [f['feature'] for f in featurefamilies]
-
-    #print('get features by family name - ' + familyname + ': ', len(features))
-
     return features
 
 
 
-def addfeaturetonucseq(repo, name, nucseq, feature, position, authorid, datecreated):
+def addfeaturetonucseq(repo, name, nucseq, feature, position, authorid, date):
     nucseqannotation = {}
     nucseqannotation['authorid'] = authorid
-    nucseqannotation['datecreated'] = datecreated
+    nucseqannotation['datecreated'] = date
     nucseqannotation['feature'] = feature
     nucseqannotation['forwardcolor'] = feature['forcolor']
     nucseqannotation['name'] = feature['name']
@@ -125,11 +108,8 @@ def getannotationsbyfamily(repo, nucseq, familyname):
         feature = nsa['feature']
         ffx = [ffx for ffx in repo['ffxref'] if ffx['feature']['idfeature'] == feature['idfeature']][0]
         fam = ffx['family']
-
         if 'name' in fam:
             if fam['name'].lower() == familyname.lower():
-                #if 'overhang' in familyname:
-                #    print('feature name: ' + feature['name'] + ', seq: ' + feature['nucseq']['sequence'])
                 overhanganno.append(nsa)
 
     return overhanganno
@@ -137,25 +117,25 @@ def getannotationsbyfamily(repo, nucseq, familyname):
 
 
 def getoverhangpositioninplasmid(nucseq, overhangsequence, dir):
+    '''
+    Gets first occurrence of overhang sequence in the nucseq.
+    The overhang sequence is abutted by:
+        1) a BsaI-N- site upstream, or
+        2) a N-reverse-BsaI downstream.
+    '''
+
     overhangsequence = overhangsequence.strip().lower()
-    # dir: DNA Direction (THREE_PRIME or FIVE_PRIME)
 
     forwardBsaISitePosStrand = "ggtctc"
     forwardBbsISitePosStrand = "gaagac"
-    reverseBbsISitePosStrand = "gtcttc"
     reverseBsaISitePosStrand = "gagacc"
     forwardBsaIDistance = 1
     forwardBbsIDistance = 2
-    reverseBbsIDistance = 2
-    reverseBsaIDistance = 1
 
     maxupstreamlen = max(len(forwardBsaISitePosStrand) + forwardBsaIDistance, len(forwardBbsISitePosStrand) + forwardBbsIDistance)
 
     circularizedseq = nucseq[len(nucseq) - 1 - (maxupstreamlen - 1):] + nucseq
     circularizedseq = circularizedseq.strip().lower()
-
-    #excesslen = maxupstreamlen
-    #position = excesslen
 
     if dir == 'FIVE_PRIME':
         regx = (re.escape(forwardBsaISitePosStrand) + r'[agct]' + re.escape(overhangsequence))
@@ -167,14 +147,19 @@ def getoverhangpositioninplasmid(nucseq, overhangsequence, dir):
     match = re.search(regx, circularizedseq, re.IGNORECASE)
     if match:
         return match.start()
-    else:
-        print('Could not find overhang ' + regx + ' in sequence.')
-        print(currfragment)
-        return -1
+
+    return -1
 
 
 
-def getoverhangpositioninvector(repo, nucseq, overhangsequence):
+def getoverhangpositioninvector(nucseq, overhangsequence):
+    '''
+    Gets first occurrence of overhang sequence in the nucseq.
+    The overhang sequence is abutted by:
+        1) a BsaI-N- upstream and NN-BbsI downstream, or
+        2) a BsbI-NN-upstream and N-BsaI downstream.
+    '''
+
     overhangsequence = overhangsequence.strip()
 
     forwardBsaISitePosStrand = "ggtctc"
@@ -183,20 +168,14 @@ def getoverhangpositioninvector(repo, nucseq, overhangsequence):
     reverseBsaISitePosStrand = "gagacc"
     forwardBsaIDistance = 1
     forwardBbsIDistance = 2
-    reverseBbsIDistance = 2
-    reverseBsaIDistance = 1
 
+    # Get max length of potential abutting strands
     maxupstreamlen = max(len(forwardBsaISitePosStrand) + forwardBsaIDistance,
                          len(forwardBbsISitePosStrand) + forwardBbsIDistance)
 
+    # Concat onto nucseq a substring of nucseq - the substring length is the max abutting strand size
     circularizedseq = nucseq[(len(nucseq) - 1 - maxupstreamlen - 1):] + nucseq;
-
-    circularizedseq = circularizedseq.lower();
-    #excessLen = maxupstreamlen;
-    #position = excessLen
-    #overhangA = r'.*' + re.escape(forwardBbsISitePosStrand) + r'[agct][agct]' + re.escape(overhangsequence) + r'[agct]' + re.escape(reverseBsaISitePosStrand) + r'.*'
-    #overhangB = r'.*' + re.escape(forwardBsaISitePosStrand) + r'[agct]' + re.escape(overhangsequence) + r'[agct][agct]' + re.escape(reverseBbsISitePosStrand) + r'.*'
-    #position = maxupstreamlen
+    circularizedseq = circularizedseq.lower()
 
     regex = []
     regex.append(re.escape(forwardBbsISitePosStrand) + r'[agct][agct]' + re.escape(overhangsequence) + r'[agct]' + re.escape(reverseBsaISitePosStrand))
@@ -207,19 +186,14 @@ def getoverhangpositioninvector(repo, nucseq, overhangsequence):
         if match:
             return match.start()
 
-
-    print('Could not find overhang ' + rx + ' in sequence.')
-    print(circularizedseq)
     return -1
 
 
-def persistpart(repo, partname, partsequence, description, isbasic, authorid, datecreated):
-    #print('persisted partname: ' + partname)
-    #print('sequence is: ' + partsequence)
+def persistpart(repo, partname, partsequence, description, isbasic, authorid, date):
     part = {}
     part['authorid'] = authorid
-    part['datecreated'] = datecreated
-    part['lastmodified'] = datecreated
+    part['datecreated'] = date
+    part['lastmodified'] = date
     part['name'] = partname
     partid = uuid.uuid4()
     part['idpart'] = partid
@@ -229,14 +203,13 @@ def persistpart(repo, partname, partsequence, description, isbasic, authorid, da
         part['basic'] = 0
     part['description'] = description
 
-    format = [f for f in repo['formats'] if f['idformat'] == 'edu-bu-synbiotools-format-moclo'][0]
-
-    if format:
-        part['format'] = format
+    format = [f for f in repo['formats'] if f['idformat'] == 'edu-bu-synbiotools-format-moclo']
+    if len(format) > 0:
+        part['format'] = format[0]
 
     nucseq = {}
-    nucseq['datecreated'] = datecreated
-    nucseq['lastmodififed'] = datecreated
+    nucseq['datecreated'] = date
+    nucseq['lastmodififed'] = date
     nucseq['sequence'] = partsequence
     nucseq['idnucseq'] = partid
     repo['nucseq'].append(nucseq)
@@ -246,15 +219,16 @@ def persistpart(repo, partname, partsequence, description, isbasic, authorid, da
 
     return part
 
-def persistplasmid(repo, name, part, vector, authorid, datecreated):
-
+def persistplasmid(repo, name, part, vector, authorid, date):
     plasmid = {}
     plasmid['authorid'] = authorid
-    plasmid['datecreated'] = datecreated
-    plasmid['lastmodified'] = datecreated
+    plasmid['datecreated'] = date
+    plasmid['lastmodified'] = date
 
-    format = [f for f in repo['formats'] if f['idformat'] == 'edu-bu-synbiotools-format-moclo'][0]
-    plasmid['format'] = format
+    format = [f for f in repo['formats'] if f['idformat'] == 'edu-bu-synbiotools-format-moclo']
+    if len(format) > 0:
+        plasmid['format'] = format[0]
+
     plasmid['part'] = part
     plasmid['vector'] = vector
     plasmid['name'] = name
@@ -262,34 +236,26 @@ def persistplasmid(repo, name, part, vector, authorid, datecreated):
     plasmid['idplasmid'] = plasmidid
     repo['plasmids'].append(plasmid)
 
-    # TODO: needed? persists Simple Rich Sequence
-    # ge = plasmidgenbankexporter(repo, plasmid)
+    # TODO: note - orig Java Puppeteer persists Simple Rich Sequence
 
     return plasmid
 
 
 def getconstituentparts(repo, designname):
-
-    # TODO why sort here?
-    # sortedcx = sorted(compositexrefs, key=attrgetter('position'), reverse=True)
-
-    # get parent of each compositexref
     return [cx['parentpart'] for cx in repo['compositexrefs'] if cx['childpart']['name'] == designname]
 
 
 def getvectorsbypart(repo, part):
-
     plasmids = [p for p in repo['plasmids'] if p['part']['idpart'] == part['idpart']]
     partvectors = [plasmid['vector'] for plasmid in plasmids]
     return partvectors
-
 
 
 def getmoclovectordigestionlocations(repo, vector):
     nsa = getannotationsbyfamily(repo, vector['nucseq'], 'overhang')
     if len(nsa) != 2:
         raise ValueError('Vector ' + vector['name'] + ' contains an unexpected number (' + \
-                         nsa.len() + ' of overhang + annotations.')
+                         len(nsa) + ' of overhang + annotations.')
 
     if nsa[0]['startx'] < nsa[1]['startx']:
         vectorminanno = nsa[0]
@@ -298,17 +264,12 @@ def getmoclovectordigestionlocations(repo, vector):
         vectorminanno = nsa[1]
         vectormaxanno = nsa[0]
 
-    #endofvectorprefix = vectorminanno['endx']
-    #vectorprefix = vector['nucseq']['sequence'][0: endofvectorprefix + 1]
-    #startofvectorsuffix = vectormaxanno['startx']
-    #vectorsuffix = vector['nucseq']['sequence'][startofvectorsuffix:]
-
     locations= [vectorminanno['startx'],
                 vectorminanno['endx'],
                vectormaxanno['startx'],
                 vectormaxanno['endx']]
-
     return locations
+
 
 def getmoclooverhangannotation(repo, nucseq, dir):
     nsa = getannotationsbyfamily(repo, nucseq, 'overhang')
@@ -333,6 +294,7 @@ def getmoclooverhangannotation(repo, nucseq, dir):
     else:
         raise ValueError('Unexpected parameter value in query.')
 
+
 def findvectorsbyoverhangresistance(repo, fiveprimeoverhang, threeprimeoverhang, compatibleresistances):
     matching = []
     for vector in repo['vectors']:
@@ -348,10 +310,12 @@ def findvectorsbyoverhangresistance(repo, fiveprimeoverhang, threeprimeoverhang,
         overhangsfound = False
         nsa = getannotationsbyfamily(repo, nt, 'overhang')
         if nsa[0]['startx'] < nsa[1]['startx']:
-            if nsa[0]['feature']['idfeature'] == fiveprimeoverhang['idfeature'] and nsa[1]['feature']['idfeature'] == threeprimeoverhang['idfeature']:
+            if nsa[0]['feature']['idfeature'] == fiveprimeoverhang['idfeature'] and \
+                            nsa[1]['feature']['idfeature'] == threeprimeoverhang['idfeature']:
                         overhangsfound = True
         else:
-            if nsa[0]['feature']['idfeature'] == threeprimeoverhang['idfeature'] and nsa[1]['feature']['idfeature'] == fiveprimeoverhang['idfeature']:
+            if nsa[0]['feature']['idfeature'] == threeprimeoverhang['idfeature'] and \
+                            nsa[1]['feature']['idfeature'] == fiveprimeoverhang['idfeature']:
                         overhangsfound = True
 
         if resistancefound and overhangsfound:
@@ -360,11 +324,8 @@ def findvectorsbyoverhangresistance(repo, fiveprimeoverhang, threeprimeoverhang,
     return matching
 
 
-
-
-# functions in Repository.java but not here:
+# Functions in original Java Puppeteer repository.java but not here:
 # removeallfiltersexceptsubject
 # getplasmidsbypart
 # getpartsincollection
-# purgeuserlibrary (don't need)
-# purgeplan (don't need)
+

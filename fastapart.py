@@ -1,11 +1,9 @@
 import re
 import uuid
 
-def makefasta(repo, datecreated):
-    # TODO what is the point of making a FASTA?
-
+def makefasta(repo, date):
     fasta = {}
-    fasta['datecreated'] = datecreated
+    fasta['datecreated'] = date
     fasta['features'] = repo['features']
     fasta['nsa'] = repo['nsa']
     fasta['nucseq'] = repo['nucseq']
@@ -15,19 +13,10 @@ def makefasta(repo, datecreated):
     return fasta
 
 
-
-def savepart(repo, fasta, partname, partauthorname, partdescription, partsequence, datecreated):
+def savepart(fasta, partname, partauthorname, partdescription, partsequence, datecreated):
     partsequencenonl = re.sub(r'[^AGCTagct]+', '', partsequence)
-    #print('partsequence is ' + partsequence)
-    #print('partnonl     is ' + partsequencenonl)
     partid = uuid.uuid4()
 
-    # TODO - commenting this out of orig logic, bc made no sense
-    # for part in repo['parts']:
-    #    if part['idpart'] == partid:
-    #        return
-
-    lastpartid = partid
     seqid = partid
     nucseq = [nuc for nuc in fasta['nucseq'] if nuc['idnucseq'] == seqid]
     if not nucseq:
@@ -45,7 +34,6 @@ def savepart(repo, fasta, partname, partauthorname, partdescription, partsequenc
     part['riskgroup'] = 0
     part['nucseq'] = nucseq
     part['datecreated'] = datecreated
-
     fasta['parts'].append(part)
 
     feature  = {}
@@ -55,7 +43,6 @@ def savepart(repo, fasta, partname, partauthorname, partdescription, partsequenc
     feature['riskgroup'] = 0
     feature['nucseq'] = nucseq
     feature['datecreated'] = datecreated
-
     fasta['features'].append(feature)
 
     return part
