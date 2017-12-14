@@ -194,6 +194,8 @@ def persistpart(repo, partname, partsequence, description, isbasic, authorid, da
     part['authorid'] = authorid
     part['datecreated'] = date
     part['lastmodified'] = date
+    if 'e0030_cd' in partname.lower():      #TODO - Move this to input validation check
+        partname = 'Part-E0030m_CD'
     part['name'] = partname
     partid = uuid.uuid4()
     part['idpart'] = partid
