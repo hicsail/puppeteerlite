@@ -20,7 +20,7 @@ repo = {
     'cxref': [                   # collections xref
         {'authorid':''
          #'collectionid' :'',
-         'cxrefpk': {            # cxrefpk dict
+         'cxrefpk': {            
             'collectionid': '',
             'objectid': '' },
          'datecreated' :'',
@@ -44,7 +44,7 @@ repo = {
          'superfamilyid' :''}],
 
     'features': [
-        {'authorid': '',          # subject dict
+        {'authorid': '',          
          'datecreated':'',
          'featuredata':'',
          'forcolor':'',
@@ -53,7 +53,7 @@ repo = {
          'iscds': '',             # TODO null or not initialized
          'lastmodified':'',
          'name':'',
-         'nucseq': {},            # nucseq dict
+         'nucseq': {},            
          'pdbid':'',
          'revcolor': '',
          'riskgroup':'',
@@ -63,10 +63,10 @@ repo = {
     'ffxref': [
         {'datecreated':'',
          'lastmodified':'',
-         'family' : {},           # family dict
-         'feature': {},           # feature dict
+         'family' : {},           
+         'feature': {},           
          'ffxrefpk': {
-             'featureid' :'',     # ffxrefpk dict
+             'featureid' :'',     
              'familyid':''} }],
 
     'formats': [
@@ -77,10 +77,10 @@ repo = {
         {'annotationid': '',
          'authorid': '',
          'datecreated': '',
-         'feature': {},           # feature dict
+         'feature': {},           
          'forwardcolor': '',
          'name': '',
-         'nucseq': {},            # nucseq dict
+         'nucseq': {},            
          'reversecolor': '',
          'starx': '',
          'endx' : '' }],
@@ -97,21 +97,21 @@ repo = {
          'basic':'',              # '1' if isbasic else '0'
          'datecreated': '',
          'description': '',
-         'format': {},            # formats dict
+         'format': {},            
          'idpart': '',
          'name':'',
-         'nucseq': {},            # nucseq dict
+         'nucseq': {},            
          'riskgroup': '' }],
 
     'plasmids' :[
-        {'authorid': '',          # subject dict
+        {'authorid': '',          
          'datecreated': '',
-         'format': {},            # formats dict
+         'format': {},            
          'idplasmid' : '',
          'lastmodified':'',
          'name' : '',
-         'part' : {},             # part dict
-         'vector': {}}],          # vector dict
+         'part' : {},             
+         'vector': {}}],          
 
     'vectors': [
         {'authorid': '',
@@ -119,7 +119,7 @@ repo = {
          'description': '',
          'name': '',
          'idvector' :'',
-         'nucseq':{},             # nucseq dict
+         'nucseq':{},             
          'iscircular': '' }],
 
     'subjects': [
@@ -165,7 +165,7 @@ fastas = [
 ### REQUEST ###
 
 'buildrequest': [
-    {'designs':[],                     # design dict
+    {'designs':[],                     # list of design dicts
      'dobuildabilityverification': '', # boolean
      #'idbuild': '',
      'owneruuid': '',
@@ -182,7 +182,7 @@ fastas = [
 'design': [
     {'name': '',
      'partpositionmap': {
-         position: name },             # partnames dict
+         position: name },             
      'vectorname': ''}
 ]
 
@@ -198,7 +198,7 @@ fastas = [
      'concentrationunit': '',
     # 'idpart': '',
      'name':'',
-     'overhangs': {},                  # overhangs dict
+     'overhangs': {},                  
      'sequence': '',
      'volume': '',
      'volumeunit': ''}
