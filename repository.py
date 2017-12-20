@@ -19,7 +19,7 @@ def create_feature(repo, featurename, featuresequence, familyname, date):
     feature['nucseq'] = nucseq
     repo['features'].append(feature)
 
-    family = getfamilybyname(repo, familyname)
+    family = get_family_by_name(repo, familyname)
 
     ffxref = {}
     ffxref['family'] = family

@@ -205,13 +205,13 @@ def process_vectors(repo, project, vectorsfiles, directories, instanceid, author
             for feature in overhangfeatures:
 
                 if not foundfeature1 and feature['name'].upper() == fiveprimeoverhangname.upper():
-                    position = repository.getoverhangpositioninvector(vectorsequence, feature['nucseq']['sequence'])
-                    repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, date)
+                    position = repository.get_overhang_position_in_vector(vectorsequence, feature['nucseq']['sequence'])
+                    repository.add_feature_to_nucseq(repo, vectorname, nucseq, feature, position, authorid, date)
                     foundfeature1 = True
 
                 if not foundfeature2 and feature['name'].upper() == threeprimeoverhangname.upper():
-                    position = repository.getoverhangpositioninvector(vectorsequence, feature['nucseq']['sequence'])
-                    repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, date)
+                    position = repository.get_overhang_position_in_vector(vectorsequence, feature['nucseq']['sequence'])
+                    repository.add_feature_to_nucseq(repo, vectorname, nucseq, feature, position, authorid, date)
                     ft2 = feature
                     foundfeature2 = True
 
@@ -222,24 +222,24 @@ def process_vectors(repo, project, vectorsfiles, directories, instanceid, author
 
             foundfeature = False
 
-            for feature in repository.getfeaturesbyfamilyname(repo, 'resistance'):
+            for feature in repository.get_features_by_family_name(repo, 'resistance'):
                 if feature['name'].upper() == resistancename.upper():
                     position = nucseq['sequence'].find(feature['nucseq']['sequence'])
-                    repository.addfeaturetonucseq(repo, vectorname, nucseq, feature, position, authorid, date)
+                    repository.add_feature_to_nucseq(repo, vectorname, nucseq, feature, position, authorid, date)
                     foundfeature = True
 
             if not foundfeature:
-                overhangpos = repository.getoverhangpositioninvector(vectorsequence, ft2['nucseq']['sequence'])
+                overhangpos = repository.get_overhang_position_in_vector(vectorsequence, ft2['nucseq']['sequence'])
                 if overhangpos < 0:
                     raise ValueError('The overhang ' + ft2['name'] + ' could not be found in the vector ' + vectorname)
                 startpos = overhangpos + len(ft2['nucseq']['sequence']) + 1
                 resistancesequence = nucseq['sequence'][startpos: len(nucseq['sequence'])]
-                f = repository.createfeature(repo, resistancename, resistancesequence, 'resistance', date)
+                f = repository.create_feature(repo, resistancename, resistancesequence, 'resistance', date)
                 position = nucseq['sequence'].find(f['nucseq']['sequence'])
-                repository.addfeaturetonucseq(repo, vectorname, nucseq, f, position, authorid, date)
-                repository.addobjecttocollection(repo, collectionid, f['idfeature'], 'FEATURE', authorid, date)
+                repository.add_feature_to_nucseq(repo, vectorname, nucseq, f, position, authorid, date)
+                repository.add_object_to_collection(repo, collectionid, f['idfeature'], 'FEATURE', authorid, date)
 
-            repository.addobjecttocollection(repo, collectionid, vectorid, 'VECTOR', authorid, date)
+            repository.add_object_to_collection(repo, collectionid, vectorid, 'VECTOR', authorid, date)
             lineno += 1
 
 
@@ -295,22 +295,22 @@ def process_plasmids(repo, project, plasmidsfiles, directories, instanceid, auth
 
             partsequence = get_part_sequence(repo, plasmidsequence, vectorname)
 
-            part = repository.persistpart(repo, partname, partsequence, description, True, authorid, date)
+            part = repository.persist_part(repo, partname, partsequence, description, True, authorid, date)
             persist_part_overhang_annotations(repo, vectorname, part, authorid, date)
             persist_part_feature(repo, vectorname, part, partfamily, authorid, date)
 
-            repository.addobjecttocollection(repo, collectionid, part['idpart'], 'PART', authorid, date)
+            repository.add_object_to_collection(repo, collectionid, part['idpart'], 'PART', authorid, date)
 
             # TODO - I add new families, instead of raising an error.  See Java line 702+
             if partfamily.lower() not in allcollections:
                 add_new_family_to_all_collections(repo, partfamily, allcollections, project, instanceid, authorid, date)
 
-            repository.addobjecttocollection(repo,
+            repository.add_object_to_collection(repo,
                                             allcollections[partfamily]['idcollection'], part['idpart'],
                                             'PART', authorid, date)
 
             vector = [v for v in repo['vectors'] if v['name'].lower() == vectorname.lower()][0]
-            repository.persistplasmid(repo, 'PLASMID-' + tokens[2], part, vector, authorid, date)
+            repository.persist_plasmid(repo, 'PLASMID-' + tokens[2], part, vector, authorid, date)
 
             lineno += 1
 
@@ -331,7 +331,7 @@ def create_collections_by_family(repo, project, instanceid, authorid, date):
         collection['idcollection'] = collectionid
         repo['collections'].append(collection)
         allcollections[famname] = collection
-        repository.addobjecttocollection(repo, project['idcollection'], collection['idcollection'], 'COLLECTION', authorid, date)
+        repository.add_object_to_collection(repo, project['idcollection'], collection['idcollection'], 'COLLECTION', authorid, date)
 
     return allcollections
 
@@ -350,14 +350,14 @@ def add_new_family_to_all_collections(repo, partfamily, allcollections, project,
     collection['idcollection'] = collectionid
     repo['collections'].append(collection)
     allcollections[partfamily] = collection
-    repository.addobjecttocollection(repo, project['idcollection'], collection['idcollection'], 'COLLECTION', authorid, date)
+    repository.add_object_to_collection(repo, project['idcollection'], collection['idcollection'], 'COLLECTION', authorid, date)
 
 
 
 def persist_part_overhang_annotations(repo, vectorname, part, authorid, date):
     nsa, fiveprimeoverhang, threeprimeoverhang = get_nucseq_annotations(repo, vectorname)
 
-    repository.addfeaturetonucseq(repo,
+    repository.add_feature_to_nucseq(repo,
                                   fiveprimeoverhang['feature']['name'] + " in " + part['name'],
                                   part['nucseq'],
                                   fiveprimeoverhang['feature'],
@@ -365,7 +365,7 @@ def persist_part_overhang_annotations(repo, vectorname, part, authorid, date):
                                   authorid,
                                   date)
 
-    repository.addfeaturetonucseq(repo,
+    repository.add_feature_to_nucseq(repo,
                                   threeprimeoverhang['feature']['name'] + " in " + part['name'],
                                   part['nucseq'],
                                   threeprimeoverhang['feature'],
@@ -384,9 +384,9 @@ def persist_part_feature(repo, vectorname, part, familyname, authorid, date):
     end = len(partseq) - len(threeprimeoverhang['feature']['nucseq']['sequence'].strip())
     partfeatureseq = partseq[start:end]
 
-    partfeature = repository.createfeature(repo, 'Feature-' + part['name'], partfeatureseq, familyname, date)
+    partfeature = repository.create_feature(repo, 'Feature-' + part['name'], partfeatureseq, familyname, date)
 
-    repository.addfeaturetonucseq(repo,
+    repository.add_feature_to_nucseq(repo,
                                   'Feature-' + part['name'],
                                   part['nucseq'],
                                   partfeature,
@@ -398,11 +398,11 @@ def persist_part_feature(repo, vectorname, part, familyname, authorid, date):
 def get_part_sequence(repo, plasmidsequence, vectorname):
     nsa, fiveprimeoverhang, threeprimeoverhang = get_nucseq_annotations(repo, vectorname)
 
-    fpopos = repository.getoverhangpositioninplasmid(plasmidsequence,
+    fpopos = repository.get_overhang_position_in_plasmid(plasmidsequence,
                                                      fiveprimeoverhang['feature']['nucseq']['sequence'],
                                                      'FIVE_PRIME')
 
-    tpopos = repository.getoverhangpositioninplasmid(plasmidsequence,
+    tpopos = repository.get_overhang_position_in_plasmid(plasmidsequence,
                                                      threeprimeoverhang['feature']['nucseq']['sequence'],
                                                      'THREE_PRIME')
 
@@ -439,7 +439,7 @@ def get_vector_overhang_annotations(repo, vectorname):
         raise ValueError('There is an invalid vector (' + vectorname + ') in the plasmids file.')
     vector = vector[0]
 
-    nucseqannotations = repository.getannotationsbyfamily(repo, vector['nucseq'], 'overhang')
+    nucseqannotations = repository.get_annotations_by_family(repo, vector['nucseq'], 'overhang')
     if len(nucseqannotations) != 2:
         raise ValueError('Unexpected number of overhangs found in ' + vectorname + ' num is ', len(nucseqannotations))
 
