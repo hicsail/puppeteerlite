@@ -200,7 +200,7 @@ def process_vectors(repo, project, vectorsfiles, directories, instanceid, author
             foundfeature1 = False
             foundfeature2 = False
 
-            overhangfeatures = repository.getfeaturesbyfamilyname(repo, 'overhang')
+            overhangfeatures = repository.get_features_by_family_name(repo, 'overhang')
 
             for feature in overhangfeatures:
 
