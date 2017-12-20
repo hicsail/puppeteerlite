@@ -4,13 +4,13 @@ import sys
 import gff3design
 
 
-def setspecification(repo, constellation_url, authorid, datecreated):
-    constellationdict, partslibrarydict = getconstellationoutput(repo, constellation_url, authorid)
-    saveGFF3designs(repo, constellationdict, authorid, datecreated, partslibrarydict)
+def set_specification(repo, constellation_url, authorid, datecreated):
+    constellationdict, partslibrarydict = get_constellation_output(repo, constellation_url, authorid)
+    save_designs(repo, constellationdict, authorid, datecreated, partslibrarydict)
 
 
-def getconstellationoutput(repo, constellation_url, userid):
-    constellationinput, partslibrary = getconstellationinput(repo, userid)
+def get_constellation_output(repo, constellation_url, userid):
+    constellationinput, partslibrary = get_constellation_input(repo, userid)
 
     headers = {'Content-Type': 'application/json'}
     constellation_output = requests.post(constellation_url, data=constellationinput, headers=headers)
@@ -23,8 +23,8 @@ def getconstellationoutput(repo, constellation_url, userid):
     return json.loads(constellation_output.text), partslibrary
 
 
-def getconstellationinput(repo, userid):
-    specification, categories, partslibrary, partsdict = buildspecification(repo)
+def get_constellation_input(repo, userid):
+    specification, categories, partslibrary, partsdict = build_constellation_input(repo)
 
     constellation_parameter = {}
     constellation_parameter['specification']= specification
@@ -40,7 +40,7 @@ def getconstellationinput(repo, userid):
 
 
 
-def buildspecification(repo):
+def build_constellation_input(repo):
 
     # TODO instead of hard-coding spec string, get it from user
     specificationstring = '{{' + \
@@ -92,7 +92,7 @@ def buildspecification(repo):
 
                             if part['idpart'] not in referredparts:
                                 if 'nucseq' in part:
-                                    feature = getpartfeature(repo, part)
+                                    feature = get_part_feature(repo, part)
 
                                     if 'forcolor' not in feature:
                                         forcolornum = '13'
@@ -110,7 +110,7 @@ def buildspecification(repo):
     return specificationstring, categories, partslibrary, partsdict
 
 
-def getpartfamily(repo, part):
+def get_part_family(repo, part):
     '''
     Gets the first non-overhang family associated with the param part's nucseq's feature.
     '''
@@ -129,7 +129,7 @@ def getpartfamily(repo, part):
     return userdefined
 
 
-def getpartfeature(repo, part):
+def get_part_feature(repo, part):
     '''
     Gets the first non-overhang feature associated with the param part's nucseq.
     '''
@@ -146,15 +146,15 @@ def getpartfeature(repo, part):
 
 
 
-def saveGFF3designs(repo, constellationdict, authorid, datecreated, partsdict):
+def save_designs(repo, constellationdict, authorid, datecreated, partsdict):
     countdesigns = 0
     for design in constellationdict['designs']:
-        gff3 = gff3design.makeGFF3design(repo, design, countdesigns, partsdict)
+        gff3 = gff3design.make_GFF3_design(repo, design, countdesigns, partsdict)
         gff3design.persist(repo, gff3['gff3parts'], gff3, authorid, datecreated)
         countdesigns += 1
 
 
-def printconstellationinput(constellationinput):
+def print_constellation_input(constellationinput):
     # For debugging
     orig_stdout = sys.stdout
     f = open('constellationinput.json', 'w')

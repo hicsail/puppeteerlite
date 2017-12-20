@@ -1,7 +1,7 @@
 import re
 import uuid
 
-def makefasta(repo, date):
+def make_fasta(repo, date):
     fasta = {}
     fasta['datecreated'] = date
     fasta['features'] = repo['features']
@@ -13,7 +13,7 @@ def makefasta(repo, date):
     return fasta
 
 
-def savepart(fasta, partname, partauthorname, partdescription, partsequence, datecreated):
+def save_part(fasta, partname, partauthorname, partdescription, partsequence, datecreated):
     partsequencenonl = re.sub(r'[^AGCTagct]+', '', partsequence)
     partid = uuid.uuid4()
 

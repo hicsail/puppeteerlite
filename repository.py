@@ -2,7 +2,7 @@ import uuid
 import random
 import re
 
-def createfeature(repo, featurename, featuresequence, familyname, date):
+def create_feature(repo, featurename, featuresequence, familyname, date):
     feature = {}
     featureid = uuid.uuid4()
     feature['idfeature']= featureid
@@ -38,7 +38,7 @@ def createfeature(repo, featurename, featuresequence, familyname, date):
 
 
 
-def getfamilybyname(repo, familyname):
+def get_family_by_name(repo, familyname):
     if repo['families']:
         for fam in repo['families']:
             if 'name' in fam:
@@ -56,7 +56,7 @@ def getfamilybyname(repo, familyname):
 
 
 
-def addobjecttocollection(repo, collectionid, objectid, objecttype, authorid, date):
+def add_object_to_collection(repo, collectionid, objectid, objecttype, authorid, date):
     cxref = {}
     cxrefpk = {}
     cxrefpk['collectionid']=collectionid
@@ -71,15 +71,15 @@ def addobjecttocollection(repo, collectionid, objectid, objecttype, authorid, da
     repo['cxref'].append(cxref)
 
 
-def getfeaturesbyfamilyname(repo, familyname):
-    family = getfamilybyname(repo, familyname);
+def get_features_by_familyname(repo, familyname):
+    family = get_family_by_name(repo, familyname);
     featurefamilies = [ffx for ffx in repo['ffxref'] if ffx['family']['idfamily'] == family['idfamily']]
     features = [f['feature'] for f in featurefamilies]
     return features
 
 
 
-def addfeaturetonucseq(repo, name, nucseq, feature, position, authorid, date):
+def add_feature_to_nucseq(repo, name, nucseq, feature, position, authorid, date):
     nucseqannotation = {}
     nucseqannotation['authorid'] = authorid
     nucseqannotation['datecreated'] = date
@@ -101,7 +101,7 @@ def addfeaturetonucseq(repo, name, nucseq, feature, position, authorid, date):
     repo['nsa'].append(nucseqannotation)
 
 
-def getannotationsbyfamily(repo, nucseq, familyname):
+def get_annotations_by_family(repo, nucseq, familyname):
     overhanganno = []
     allnucseqnsa = [nsa for nsa in repo['nsa'] if nsa['nucseq']['idnucseq'] == nucseq['idnucseq']]
     for nsa in allnucseqnsa:
@@ -116,7 +116,7 @@ def getannotationsbyfamily(repo, nucseq, familyname):
 
 
 
-def getoverhangpositioninplasmid(nucseq, overhangsequence, dir):
+def get_overhang_position_in_plasmid(nucseq, overhangsequence, dir):
     '''
     Gets first occurrence of overhang sequence in the nucseq.
     The overhang sequence is abutted by:
@@ -152,7 +152,7 @@ def getoverhangpositioninplasmid(nucseq, overhangsequence, dir):
 
 
 
-def getoverhangpositioninvector(nucseq, overhangsequence):
+def get_overhang_position_in_vector(nucseq, overhangsequence):
     '''
     Gets first occurrence of overhang sequence in the nucseq.
     The overhang sequence is abutted by:
@@ -189,7 +189,7 @@ def getoverhangpositioninvector(nucseq, overhangsequence):
     return -1
 
 
-def persistpart(repo, partname, partsequence, description, isbasic, authorid, date):
+def persist_part(repo, partname, partsequence, description, isbasic, authorid, date):
     part = {}
     part['authorid'] = authorid
     part['datecreated'] = date
@@ -221,7 +221,7 @@ def persistpart(repo, partname, partsequence, description, isbasic, authorid, da
 
     return part
 
-def persistplasmid(repo, name, part, vector, authorid, date):
+def persist_plasmid(repo, name, part, vector, authorid, date):
     plasmid = {}
     plasmid['authorid'] = authorid
     plasmid['datecreated'] = date
@@ -243,18 +243,18 @@ def persistplasmid(repo, name, part, vector, authorid, date):
     return plasmid
 
 
-def getconstituentparts(repo, designname):
+def get_constituent_parts(repo, designname):
     return [cx['parentpart'] for cx in repo['compositexrefs'] if cx['childpart']['name'] == designname]
 
 
-def getvectorsbypart(repo, part):
+def get_vectors_by_part(repo, part):
     plasmids = [p for p in repo['plasmids'] if p['part']['idpart'] == part['idpart']]
     vectors = [plasmid['vector'] for plasmid in plasmids]
     return vectors
 
 
-def getmoclovectordigestionlocations(repo, vector):
-    nsa = getannotationsbyfamily(repo, vector['nucseq'], 'overhang')
+def get_moclo_vector_digestion_locations(repo, vector):
+    nsa = get_annotations_by_family(repo, vector['nucseq'], 'overhang')
     if len(nsa) != 2:
         raise ValueError('Vector ' + vector['name'] + ' contains an unexpected number (' + \
                          len(nsa) + ' of overhang + annotations.')
@@ -273,8 +273,8 @@ def getmoclovectordigestionlocations(repo, vector):
     return locations
 
 
-def getmoclooverhangannotation(repo, nucseq, dir):
-    nsa = getannotationsbyfamily(repo, nucseq, 'overhang')
+def get_moclo_overhang_annotation(repo, nucseq, dir):
+    nsa = get_annotations_by_family(repo, nucseq, 'overhang')
     if len(nsa) < 2:
         raise ValueError('Unexpectedly few annotations were found on this sequence;'
                          'cannot find all overhangs.')
@@ -297,11 +297,11 @@ def getmoclooverhangannotation(repo, nucseq, dir):
         raise ValueError('Unexpected parameter value in query.')
 
 
-def findvectorsbyoverhangresistance(repo, fiveprimeoverhang, threeprimeoverhang, compatibleresistances):
+def find_vectors_by_overhang_resistance(repo, fiveprimeoverhang, threeprimeoverhang, compatibleresistances):
     matching = []
     for vector in repo['vectors']:
         nt = vector['nucseq']
-        nsa = getannotationsbyfamily(repo, nt, 'resistance')
+        nsa = get_annotations_by_family(repo, nt, 'resistance')
 
         resistancefound = False
         for n in nsa:
@@ -310,7 +310,7 @@ def findvectorsbyoverhangresistance(repo, fiveprimeoverhang, threeprimeoverhang,
                 break
 
         overhangsfound = False
-        nsa = getannotationsbyfamily(repo, nt, 'overhang')
+        nsa = get_annotations_by_family(repo, nt, 'overhang')
         if nsa[0]['startx'] < nsa[1]['startx']:
             if nsa[0]['feature']['idfeature'] == fiveprimeoverhang['idfeature'] and \
                             nsa[1]['feature']['idfeature'] == threeprimeoverhang['idfeature']:

@@ -12,27 +12,27 @@ PROTOCOL_FORMAT = 'edu-bu-synbiotools-format-moclo'
 GENEFILE_FORMAT = 'gb'
 
 
-def makerepo(archive, instanceid, authorid, date):
-    repo = initrepository()
-    setdefaultformat(repo);
-    project = makeproject(repo, instanceid, authorid, date);
+def make_repo(archive, instanceid, authorid, date):
+    repo = init_repository()
+    set_default_format(repo);
+    project = make_project(repo, instanceid, authorid, date);
 
-    unzipfile(archive)
+    unzip_file(archive)
     archivefilepath = os.getcwd()
 
-    subdirectoriesfolder, subdirectories = getsubdirectories(str(archive))
-    overhangfiles, vectorfiles, plasmidfiles = getfilenames(subdirectories, subdirectoriesfolder)
+    subdirectoriesfolder, subdirectories = get_subdirectories(str(archive))
+    overhangfiles, vectorfiles, plasmidfiles = get_filenames(subdirectories, subdirectoriesfolder)
 
-    processoverhangs(repo, project, overhangfiles, instanceid, authorid, date);
-    processvectors(repo, project, vectorfiles, subdirectories, instanceid, authorid, date);
-    processplasmids(repo, project, plasmidfiles, subdirectories, instanceid, authorid, date);
+    process_overhangs(repo, project, overhangfiles, instanceid, authorid, date);
+    process_vectors(repo, project, vectorfiles, subdirectories, instanceid, authorid, date);
+    process_plasmids(repo, project, plasmidfiles, subdirectories, instanceid, authorid, date);
 
     os.chdir(archivefilepath)
 
     return repo
 
 
-def initrepository():
+def init_repository():
     repo = {}
     repo['collections'] = []
     repo['compositexrefs'] = []
@@ -51,12 +51,12 @@ def initrepository():
     return repo
 
 
-def setdefaultformat(repo):
+def set_default_format(repo):
     format = {'idformat': PROTOCOL_FORMAT}
     repo['formats'].append(format)
 
 
-def makeproject(repo, instanceid, authorid, date):
+def make_project(repo, instanceid, authorid, date):
     project = {}
     project['authorid'] = authorid
     project['datecreated'] = date
@@ -67,12 +67,12 @@ def makeproject(repo, instanceid, authorid, date):
     return project
 
 
-def unzipfile(archive):
+def unzip_file(archive):
     with zipfile.ZipFile(archive, 'r') as archive:
         archive.extractall('HeadtoHead2.zip' + '-contents')
 
 
-def getsubdirectories(archive):
+def get_subdirectories(archive):
     os.chdir(archive + '-contents/' + archive.strip('.zip'))
     subdirectoriesfolder = os.getcwd()
     subdirectories = os.listdir()
@@ -81,7 +81,7 @@ def getsubdirectories(archive):
     return subdirectoriesfolder, subdirectories
 
 
-def getfilenames(subdirectories, homefolder):
+def get_filenames(subdirectories, homefolder):
     overhangfiles = []
     vectorfiles = []
     plasmidfiles = []
@@ -97,13 +97,13 @@ def getfilenames(subdirectories, homefolder):
     return overhangfiles, vectorfiles, plasmidfiles
 
 
-def processoverhangs(repo, project, overhangsfiles, instanceid, authorid, date):
+def process_overhangs(repo, project, overhangsfiles, instanceid, authorid, date):
 
     for overhangsfile in overhangsfiles:
         with open(overhangsfile) as file:
             inputlines = file.readlines()
 
-        validateinputfile(inputlines[0], overhangsfile);
+        validate_input_file(inputlines[0], overhangsfile);
 
         if len(inputlines) <= 1:
             return
@@ -130,12 +130,12 @@ def processoverhangs(repo, project, overhangsfiles, instanceid, authorid, date):
 
 
 
-def processvectors(repo, project, vectorsfiles, directories, instanceid, authorid, date):
+def process_vectors(repo, project, vectorsfiles, directories, instanceid, authorid, date):
 
     for vectorsfile in vectorsfiles:
         with open(vectorsfile) as file:
             lines = file.readlines()
-        validateinputfile(lines[0], vectorsfile);
+        validate_input_file(lines[0], vectorsfile);
 
         if len(lines) <= 1:
             continue
@@ -173,7 +173,7 @@ def processvectors(repo, project, vectorsfiles, directories, instanceid, authori
             for directory in directories:
                 files = os.listdir(directory)
                 if vectorfilename in files:
-                    vectorsequence = readgenbankfile(directory + '/' + vectorfilename)
+                    vectorsequence = read_genbank_file(directory + '/' + vectorfilename)
                     break
 
 
@@ -243,12 +243,12 @@ def processvectors(repo, project, vectorsfiles, directories, instanceid, authori
             lineno += 1
 
 
-def processplasmids(repo, project, plasmidsfiles, directories, instanceid, authorid, date):
+def process_plasmids(repo, project, plasmidsfiles, directories, instanceid, authorid, date):
 
     for plasmidsfile in plasmidsfiles:
         with open(plasmidsfile) as file:
             lines = file.readlines()
-        validateinputfile(lines[0], plasmidsfile);
+        validate_input_file(lines[0], plasmidsfile);
         if len(lines) <= 1:
             continue
 
@@ -262,7 +262,7 @@ def processplasmids(repo, project, plasmidsfiles, directories, instanceid, autho
         repo['collections'].append(plasmids)
 
         # Create dict of 'family name : collection dict'
-        allcollections = createcollectionsbyfamily(repo, project, instanceid, authorid, date)
+        allcollections = create_collections_by_family(repo, project, instanceid, authorid, date)
 
         lineno = 1
         for line in lines[1:]:
@@ -287,23 +287,23 @@ def processplasmids(repo, project, plasmidsfiles, directories, instanceid, autho
             for directory in directories:
                 files = os.listdir(directory)
                 if plasmidfilename in files:
-                    plasmidsequence = readgenbankfile(directory + '/' + plasmidfilename)
+                    plasmidsequence = read_genbank_file(directory + '/' + plasmidfilename)
                     break
 
             if not plasmidsequence:
                 raise ValueError('Could not retrieve plasmid sequence.')
 
-            partsequence = getpartsequence(repo, plasmidsequence, vectorname)
+            partsequence = get_part_sequence(repo, plasmidsequence, vectorname)
 
             part = repository.persistpart(repo, partname, partsequence, description, True, authorid, date)
-            persistpartoverhangannotations(repo, vectorname, part, authorid, date)
-            persistpartfeature(repo, vectorname, part, partfamily, authorid, date)
+            persist_part_overhang_annotations(repo, vectorname, part, authorid, date)
+            persist_part_feature(repo, vectorname, part, partfamily, authorid, date)
 
             repository.addobjecttocollection(repo, collectionid, part['idpart'], 'PART', authorid, date)
 
             # TODO - I add new families, instead of raising an error.  See Java line 702+
             if partfamily.lower() not in allcollections:
-                addnewfamilytoallcollections(repo, partfamily, allcollections, project, instanceid, authorid, date)
+                add_new_family_to_all_collections(repo, partfamily, allcollections, project, instanceid, authorid, date)
 
             repository.addobjecttocollection(repo,
                                             allcollections[partfamily]['idcollection'], part['idpart'],
@@ -316,7 +316,7 @@ def processplasmids(repo, project, plasmidsfiles, directories, instanceid, autho
 
 
 
-def createcollectionsbyfamily(repo, project, instanceid, authorid, date):
+def create_collections_by_family(repo, project, instanceid, authorid, date):
     allcollections = {}
     families = repo['families']
 
@@ -336,7 +336,7 @@ def createcollectionsbyfamily(repo, project, instanceid, authorid, date):
     return allcollections
 
 
-def addnewfamilytoallcollections(repo,partfamily, allcollections, project, instanceid, authorid, date):
+def add_new_family_to_all_collections(repo, partfamily, allcollections, project, instanceid, authorid, date):
     family = {}
     family['name'] = partfamily
     family['idfamily'] = partfamily
@@ -354,8 +354,8 @@ def addnewfamilytoallcollections(repo,partfamily, allcollections, project, insta
 
 
 
-def persistpartoverhangannotations(repo, vectorname, part, authorid, date):
-    nsa, fiveprimeoverhang, threeprimeoverhang = getnucseqannotations(repo, vectorname)
+def persist_part_overhang_annotations(repo, vectorname, part, authorid, date):
+    nsa, fiveprimeoverhang, threeprimeoverhang = get_nucseq_annotations(repo, vectorname)
 
     repository.addfeaturetonucseq(repo,
                                   fiveprimeoverhang['feature']['name'] + " in " + part['name'],
@@ -375,9 +375,9 @@ def persistpartoverhangannotations(repo, vectorname, part, authorid, date):
 
 
 
-def persistpartfeature(repo, vectorname, part, familyname, authorid, date):
+def persist_part_feature(repo, vectorname, part, familyname, authorid, date):
 
-    nsa, fiveprimeoverhang, threeprimeoverhang = getnucseqannotations(repo, vectorname)
+    nsa, fiveprimeoverhang, threeprimeoverhang = get_nucseq_annotations(repo, vectorname)
 
     partseq = part['nucseq']['sequence'].strip().lower()
     start = len(fiveprimeoverhang['feature']['nucseq']['sequence'].strip())
@@ -395,8 +395,8 @@ def persistpartfeature(repo, vectorname, part, familyname, authorid, date):
                                   date)
 
 
-def getpartsequence(repo, plasmidsequence, vectorname):
-    nsa, fiveprimeoverhang, threeprimeoverhang = getnucseqannotations(repo, vectorname)
+def get_part_sequence(repo, plasmidsequence, vectorname):
+    nsa, fiveprimeoverhang, threeprimeoverhang = get_nucseq_annotations(repo, vectorname)
 
     fpopos = repository.getoverhangpositioninplasmid(plasmidsequence,
                                                      fiveprimeoverhang['feature']['nucseq']['sequence'],
@@ -414,13 +414,13 @@ def getpartsequence(repo, plasmidsequence, vectorname):
 
 
 
-def getnucseqannotations(repo, vectorname):
+def get_nucseq_annotations(repo, vectorname):
     '''
     :return: nsa                nucseq annotation list   nsas associated with param vector
              fiveprimeoverhang  nucseq annotation
              threeprimeoverhang nucseq annotation
     '''
-    nsa = getvectoroverhangannotations(repo,vectorname)
+    nsa = get_vector_overhang_annotations(repo, vectorname)
 
     fiveprimeoverhang = nsa[0]
     threeprimeoverhang = nsa[1]
@@ -432,7 +432,7 @@ def getnucseqannotations(repo, vectorname):
     return nsa, fiveprimeoverhang, threeprimeoverhang
 
 
-def getvectoroverhangannotations(repo, vectorname):
+def get_vector_overhang_annotations(repo, vectorname):
 
     vector = [v for v in repo['vectors'] if v['name'].lower() == vectorname.lower()]
     if len(vector) <= 0:
@@ -446,7 +446,7 @@ def getvectoroverhangannotations(repo, vectorname):
     return nucseqannotations
 
 
-def readgenbankfile(filename):
+def read_genbank_file(filename):
    dnastring = ''
    for dna in SeqIO.parse(filename, GENEFILE_FORMAT):
        dnastring += str(dna.seq)
@@ -454,7 +454,7 @@ def readgenbankfile(filename):
    return dnastring
 
 
-def validateinputfile(firstline, filename):
+def validate_input_file(firstline, filename):
     tokens = firstline.split(',')
     tokens = [t.lower() for t in tokens]
     valid = True

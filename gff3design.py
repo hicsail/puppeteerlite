@@ -2,7 +2,7 @@ import repository
 import fastapart
 import uuid
 
-def makeGFF3design(repo, design, countdesigns, partsdict):
+def make_GFF3_design(repo, design, countdesigns, partsdict):
     # TODO rename gff3designs and gff3parts - these are Constellation design results
 
     gff3design = {}
@@ -22,22 +22,22 @@ def makeGFF3design(repo, design, countdesigns, partsdict):
 
 def persist(repo, gff3parts, gff3design, authorid, datecreated):
     # Get parts in repo with the same name as constellation result parts ('gff3parts')
-    constituentparts = getconstituentparts(repo, gff3parts);
+    constituentparts = get_constituent_parts(repo, gff3parts);
 
     #TODO - assess utility of making FASTAS.
     # We only use FASTAS to make compositexrefs objects,
     # which cross reference repo parts and constellation results.
-    sequence = computepartsequence(repo, constituentparts)
-    fastas = fastapart.makefasta(repo, datecreated)
-    part = fastapart.savepart(fastas, gff3design['name'], authorid, gff3design['name'], sequence, datecreated)
+    sequence = compute_part_sequence(repo, constituentparts)
+    fastas = fastapart.make_fasta(repo, datecreated)
+    part = fastapart.save_part(fastas, gff3design['name'], authorid, gff3design['name'], sequence, datecreated)
 
-    saveconstituentpartreferences(repo, constituentparts, part)
-    createmocloconstituentpartfeatures(repo, part, constituentparts, authorid, datecreated)
-    makeplasmid(repo, constituentparts, part, authorid, datecreated)
+    save_constituent_part_references(repo, constituentparts, part)
+    create_moclo_constituent_part_features(repo, part, constituentparts, authorid, datecreated)
+    make_plasmid(repo, constituentparts, part, authorid, datecreated)
 
 
 
-def getconstituentparts(repo, gff3parts):
+def get_constituent_parts(repo, gff3parts):
     constituentparts = []
     for gff3 in gff3parts:
         for part in repo['parts']:
@@ -50,7 +50,7 @@ def getconstituentparts(repo, gff3parts):
     return constituentparts
 
 
-def saveconstituentpartreferences(repo, constituentparts, gff3design):
+def save_constituent_part_references(repo, constituentparts, gff3design):
     '''
     :param repo:
     :param constituentparts: parts in repo that match constellation output
@@ -70,7 +70,7 @@ def saveconstituentpartreferences(repo, constituentparts, gff3design):
         count +=1
 
 
-def computepartsequence(repo, constituentparts):
+def compute_part_sequence(repo, constituentparts):
     sequence = ''
     prev_endoverhang = ''
     count = 0
@@ -109,7 +109,7 @@ def computepartsequence(repo, constituentparts):
     return sequence
 
 
-def createmocloconstituentpartfeatures(repo, pt, constituentparts, authorid, datecreated):
+def create_moclo_constituent_part_features(repo, pt, constituentparts, authorid, datecreated):
     '''
     Adds overhangs for constituent parts to repo.
     '''
@@ -136,7 +136,7 @@ def createmocloconstituentpartfeatures(repo, pt, constituentparts, authorid, dat
 
 
         # For each overhang annotation, find the start position in the sequence, and add it to the repo
-        nsa = getnonoverhangannotations(repo, cp['nucseq'])
+        nsa = get_nonoverhang_annotations(repo, cp['nucseq'])
         for n in nsa:
             featurestart = pt['nucseq']['sequence'].strip().index(n['feature']['nucseq']['sequence']
                                                                   .strip(), currfeaturestart)
@@ -165,7 +165,7 @@ def createmocloconstituentpartfeatures(repo, pt, constituentparts, authorid, dat
         count += 1
 
 
-def getnonoverhangannotations(repo, nucseq):
+def get_nonoverhang_annotations(repo, nucseq):
     allnucseqannos = [nsa for nsa in repo['nsa'] if nsa['nucseq']['idnucseq'] == nucseq['idnucseq']]
 
     nonoverhangannos = []
@@ -178,7 +178,7 @@ def getnonoverhangannotations(repo, nucseq):
     return nonoverhangannos
 
 
-def makeplasmid(repo, constituentparts, part, authorid, datecreated):
+def make_plasmid(repo, constituentparts, part, authorid, datecreated):
     first = constituentparts[0]
     last = constituentparts[len(constituentparts) - 1]
 
@@ -197,8 +197,8 @@ def makeplasmid(repo, constituentparts, part, authorid, datecreated):
 
     allresistances = repository.getfeaturesbyfamilyname(repo, 'resistance')
 
-    resistancesforeachpart = getresistancebycompositepart(repo, constituentparts)
-    availresistances = findsatisfiableresistance(0, resistancesforeachpart, allresistances)
+    resistancesforeachpart = get_resistance_by_composite_part(repo, constituentparts)
+    availresistances = find_satisfiable_resistance(0, resistancesforeachpart, allresistances)
 
     if availresistances:
         eligiblevectors = repository.findvectorsbyoverhangresistance(repo, fpo, tpo, availresistances)
@@ -208,7 +208,7 @@ def makeplasmid(repo, constituentparts, part, authorid, datecreated):
     return {}
 
 
-def getresistancebycompositepart(repo, constituentparts):
+def get_resistance_by_composite_part(repo, constituentparts):
     resistancesforeachpart = []
     for pt in constituentparts:
         possiblevectors = repository.getvectorsbypart(repo, pt)
@@ -223,7 +223,7 @@ def getresistancebycompositepart(repo, constituentparts):
     return resistancesforeachpart
 
 
-def findsatisfiableresistance(partnumber, currresforeachpart, availresistances):
+def find_satisfiable_resistance(partnumber, currresforeachpart, availresistances):
     if partnumber < len(currresforeachpart):
         tochoosefrom = currresforeachpart[partnumber]
         for res in tochoosefrom:
@@ -231,7 +231,7 @@ def findsatisfiableresistance(partnumber, currresforeachpart, availresistances):
             if res in availresistances:
                 remove = res
                 availresistances.remove(res)
-                result = findsatisfiableresistance(partnumber+1, currresforeachpart, availresistances)
+                result = find_satisfiable_resistance(partnumber + 1, currresforeachpart, availresistances)
                 if not result:
                     availresistances.append(res)
                 else:

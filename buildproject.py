@@ -2,7 +2,7 @@ import repository
 import json
 
 
-def generatebuildrequest(repo, concentration, concentration_unit, volume_unit, authorid):
+def generate_build_request(repo, concentration, concentration_unit, volume_unit, authorid):
     partssofar = {}
     vectorssofar = {}
     partslibrary = []
@@ -18,7 +18,7 @@ def generatebuildrequest(repo, concentration, concentration_unit, volume_unit, a
         position = 0
         for part in constituents:
             if part['name'] not in partssofar:
-                pp = makepart(repo, part, concentration, concentration_unit, volume_unit)
+                pp = make_part(repo, part, concentration, concentration_unit, volume_unit)
                 partslibrary.append(pp)
                 partssofar[part['name']] = part
             partnames[position] = part['name'] + '-' + str(part['idpart'])
@@ -36,7 +36,7 @@ def generatebuildrequest(repo, concentration, concentration_unit, volume_unit, a
         for v in allvectors:
             if v['name'] not in vectorssofar:
                 vectorssofar[v['name']] = v
-                vec = makevector(repo, v, concentration, concentration_unit, volume_unit)
+                vec = make_vector(repo, v, concentration, concentration_unit, volume_unit)
                 vectorlibrary.append(vec)
 
         backbone_vector = allvectors[0]
@@ -59,7 +59,7 @@ def generatebuildrequest(repo, concentration, concentration_unit, volume_unit, a
     return request
 
 
-def makepart(repo, p, concentration, concentration_unit, volume_unit):
+def make_part(repo, p, concentration, concentration_unit, volume_unit):
     part = {}
     part['name'] = p['name'] + '-' + str(p['idpart'])
     part['sequence'] = p['nucseq']['sequence'].upper()
@@ -90,7 +90,7 @@ def makepart(repo, p, concentration, concentration_unit, volume_unit):
     return part
 
 
-def makevector(repo, v, concentration, concentration_unit, volume_unit):
+def make_vector(repo, v, concentration, concentration_unit, volume_unit):
     vector = {}
     vector['name'] = v['name'] + '-' + str(v['idvector'])
     vector['sequence'] = v['nucseq']['sequence'].upper()
@@ -115,7 +115,7 @@ def makevector(repo, v, concentration, concentration_unit, volume_unit):
     return vector
 
 
-def printnesteddict(d, indent=0):
+def print_nested_dict(d, indent=0):
     # For debugging
     for key, value in d.items():
         if isinstance(value, str):
@@ -126,9 +126,9 @@ def printnesteddict(d, indent=0):
         if isinstance(value, list):
             for v in value:
                 if (isinstance(v, dict)):
-                    printnesteddict(v, indent+1)
+                    print_nested_dict(v, indent + 1)
         if isinstance(value, dict):
-            printnesteddict(value, indent+1)
+            print_nested_dict(value, indent + 1)
         else:
             if isinstance(value, str):
                 print('\t' * (indent+1) + str(value))
