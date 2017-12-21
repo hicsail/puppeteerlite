@@ -12,7 +12,7 @@ def generate_build_request(repo, concentration, concentration_unit, volume_unit,
     # TODO original was: for part in user-selected parts:
     for gff3design in repo['gff3designs']:
 
-        constituents = repository.getconstituentparts(repo, gff3design['name'])
+        constituents = repository.get_constituent_parts(repo, gff3design['name'])
 
         partnames = {}
         position = 0
@@ -66,7 +66,7 @@ def make_part(repo, p, concentration, concentration_unit, volume_unit):
     part['concentration'] = concentration
     part['concentrationUnit'] = concentration_unit
     part['volumeUnit'] = volume_unit
-    nsa = repository.getannotationsbyfamily(repo, p['nucseq'], 'overhang')
+    nsa = repository.get_annotations_by_family(repo, p['nucseq'], 'overhang')
 
     l = []
     r = []
@@ -98,7 +98,7 @@ def make_vector(repo, v, concentration, concentration_unit, volume_unit):
     vector['concentrationUnit'] = concentration_unit
     vector['volumeUnit'] = volume_unit
 
-    locs = repository.getmoclovectordigestionlocations(repo, v);
+    locs = repository.get_moclo_vector_digestion_locations(repo, v);
     endofvectorprefix = locs[1]
     vectorprefix = v['nucseq']['sequence'][0:endofvectorprefix + 1]
     startofvectorprefix = locs[2]

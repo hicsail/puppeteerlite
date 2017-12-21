@@ -117,7 +117,7 @@ def process_overhangs(repo, project, overhangsfiles, instanceid, authorid, date)
         collections['idcollection'] = collectionid
 
         repo['collections'].append(collections)
-        repository.addobjecttocollection(repo, collectionid, project['idcollection'], 'COLLECTION', authorid, date);
+        repository.add_object_to_collection(repo, collectionid, project['idcollection'], 'COLLECTION', authorid, date);
 
         for line in inputlines:
             if ',' not in line:
@@ -125,8 +125,8 @@ def process_overhangs(repo, project, overhangsfiles, instanceid, authorid, date)
             tokens = line.split(',')
             featurename = 'overhang-' + tokens[0]
             featuresequence = tokens[1].lower()
-            featureid = repository.createfeature(repo, featurename, featuresequence, 'overhang', date);
-            repository.addobjecttocollection(repo, collectionid, featureid, 'FEATURE', authorid, date);
+            featureid = repository.create_feature(repo, featurename, featuresequence, 'overhang', date);
+            repository.add_object_to_collection(repo, collectionid, featureid, 'FEATURE', authorid, date);
 
 
 
@@ -147,7 +147,7 @@ def process_vectors(repo, project, vectorsfiles, directories, instanceid, author
         collectionid = uuid.uuid4()
         vectors['idcollection'] = collectionid
         repo['collections'].append(vectors)
-        repository.addobjecttocollection(repo, project['idcollection'],
+        repository.add_object_to_collection(repo, project['idcollection'],
                                          vectors['idcollection'], 'COLLECTION', authorid, date)
 
         lineno = 0

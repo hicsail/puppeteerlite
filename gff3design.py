@@ -78,7 +78,7 @@ def compute_part_sequence(repo, constituentparts):
         if 'moclo' in part['format']['idformat'].lower():
 
             # Get start and end overhangs for sequence
-            overhangs = repository.getannotationsbyfamily(repo, part['nucseq'], 'overhang')
+            overhangs = repository.get_annotations_by_family(repo, part['nucseq'], 'overhang')
             startoverhang = overhangs[0]
             endoverhang = overhangs[1]
             if overhangs[0]['startx'] > overhangs[1]['startx']:
@@ -118,7 +118,7 @@ def create_moclo_constituent_part_features(repo, pt, constituentparts, authorid,
 
     count = 0
     for cp in constituentparts:
-        fiveprimeoverhang = repository.getmoclooverhangannotation(repo, cp['nucseq'], 'FIVE_PRIME')
+        fiveprimeoverhang = repository.get_moclo_overhang_annotation(repo, cp['nucseq'], 'FIVE_PRIME')
 
         # For the first part, find the fiveprimeoverhang, add it to the repo
         if cp == constituentparts[0]:
@@ -130,7 +130,7 @@ def create_moclo_constituent_part_features(repo, pt, constituentparts, authorid,
             if featurestart != currfeaturestart:
                 raise ValueError("5' overhang found in composite part does not follow "
                                  "Moclo overhang rule: " + str(featurestart) + ' ' + str(currfeaturestart))
-            repository.addfeaturetonucseq(repo, pt['name'], pt['nucseq'],
+            repository.add_feature_to_nucseq(repo, pt['name'], pt['nucseq'],
                                           fiveprimeoverhang['feature'], featurestart, authorid, datecreated)
             currfeaturestart = featurestart + len(fiveprimeoverhang['feature']['nucseq']['sequence'].strip())
 
@@ -144,12 +144,12 @@ def create_moclo_constituent_part_features(repo, pt, constituentparts, authorid,
             if featurestart < 0:
                 raise ValueError('Could not find ' + n['feature']['name'] + ' in ' + pt['name'] + '.')
             currfeaturestart = featurestart + len(n['feature']['nucseq']['sequence'].strip())
-            repository.addfeaturetonucseq(repo, pt['name'], pt['nucseq'],
+            repository.add_feature_to_nucseq(repo, pt['name'], pt['nucseq'],
                                           n['feature'], featurestart, authorid, datecreated)
 
 
         # Get the threeprimeoverhang anno, find where it starts, add it to the repo
-        threeprimeoverhang = repository.getmoclooverhangannotation(repo, cp['nucseq'], 'THREE_PRIME')
+        threeprimeoverhang = repository.get_moclo_overhang_annotation(repo, cp['nucseq'], 'THREE_PRIME')
         featurestart = pt['nucseq']['sequence'].strip()\
             .index(threeprimeoverhang['feature']['nucseq']['sequence'].strip(), currfeaturestart)
 
@@ -158,7 +158,7 @@ def create_moclo_constituent_part_features(repo, pt, constituentparts, authorid,
         if featurestart != currfeaturestart:
             raise ValueError("3' overhang found in composite part that does not follow Moclo rules: ", featurestart,
                              " ", currfeaturestart)
-        repository.addfeaturetonucseq(repo, pt['name'], pt['nucseq'], threeprimeoverhang['feature'],
+        repository.add_feature_to_nucseq(repo, pt['name'], pt['nucseq'], threeprimeoverhang['feature'],
                                       featurestart, authorid, datecreated)
 
         currfeaturestart = featurestart + len(fiveprimeoverhang['feature']['nucseq']['sequence'].strip())
@@ -182,8 +182,8 @@ def make_plasmid(repo, constituentparts, part, authorid, datecreated):
     first = constituentparts[0]
     last = constituentparts[len(constituentparts) - 1]
 
-    nsafirst = repository.getannotationsbyfamily(repo, first['nucseq'], 'overhang')
-    nsalast = repository.getannotationsbyfamily(repo, last['nucseq'], 'overhang')
+    nsafirst = repository.get_annotations_by_family(repo, first['nucseq'], 'overhang')
+    nsalast = repository.get_annotations_by_family(repo, last['nucseq'], 'overhang')
 
     if nsafirst[0]['startx'] < nsafirst[1]['startx']:
         fpo = nsafirst[0]['feature']
@@ -195,15 +195,15 @@ def make_plasmid(repo, constituentparts, part, authorid, datecreated):
     else:
         tpo = nsalast[0]['feature']
 
-    allresistances = repository.getfeaturesbyfamilyname(repo, 'resistance')
+    allresistances = repository.get_features_by_family_name(repo, 'resistance')
 
     resistancesforeachpart = get_resistance_by_composite_part(repo, constituentparts)
     availresistances = find_satisfiable_resistance(0, resistancesforeachpart, allresistances)
 
     if availresistances:
-        eligiblevectors = repository.findvectorsbyoverhangresistance(repo, fpo, tpo, availresistances)
+        eligiblevectors = repository.find_vectors_by_overhang_resistance(repo, fpo, tpo, availresistances)
         if eligiblevectors:
-            return repository.persistplasmid(repo, 'PLASMID-' +
+            return repository.persist_plasmid(repo, 'PLASMID-' +
                                              part['name'], part, eligiblevectors[0], authorid, datecreated)
     return {}
 
@@ -211,10 +211,10 @@ def make_plasmid(repo, constituentparts, part, authorid, datecreated):
 def get_resistance_by_composite_part(repo, constituentparts):
     resistancesforeachpart = []
     for pt in constituentparts:
-        possiblevectors = repository.getvectorsbypart(repo, pt)
+        possiblevectors = repository.get_vectors_by_part(repo, pt)
         res = []
         for vt in possiblevectors:
-            nsa = repository.getannotationsbyfamily(repo, vt['nucseq'], 'resistance')
+            nsa = repository.get_annotations_by_family(repo, vt['nucseq'], 'resistance')
             if len(nsa) > 1:
                 print('Warning: Multi resistance vector breaks assumption.')
             if nsa:
