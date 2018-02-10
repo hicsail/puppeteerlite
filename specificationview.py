@@ -72,6 +72,8 @@ def build_constellation_input(repo):
         categories[collectionname] = []
 
         for collection in repo['collections']:
+
+            # eg, get 'promoter' collection (then 'rbs', then 'cds,' etc.)
             if 'name' in collection:
                 if collectionname in collection['name']:
                     collectionid = collection['idcollection']
@@ -80,17 +82,21 @@ def build_constellation_input(repo):
                     if len(partresults) == 0:
                         continue
 
+                    # eg, get all parts in promoter collection
                     for cxref in partresults:
                         if cxref['objecttype'].lower() == 'part':
                             partid = cxref['cxrefpk']['objectid']
                             part = [part for part in repo['parts'] if part['idpart'] == partid][0]
 
+                            # add part name to categories dict (eg, add J23106_AB to 'promoter')
                             if 'nucseq' in part:
                                 tmpname = part['name'].strip()
                                 tmpname = tmpname.replace(' ', '_')
                                 categories[collectionname].append(tmpname)
 
                             if part['idpart'] not in referredparts:
+
+                                # eg, add part name, color, and sequence to part library
                                 if 'nucseq' in part:
                                     feature = get_part_feature(repo, part)
 

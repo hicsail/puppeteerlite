@@ -19,6 +19,8 @@ def create_feature(repo, featurename, featuresequence, familyname, date):
     feature['nucseq'] = nucseq
     repo['features'].append(feature)
 
+    print('family name is ' + familyname)
+
     family = get_family_by_name(repo, familyname)
 
     ffxref = {}
@@ -71,7 +73,7 @@ def add_object_to_collection(repo, collectionid, objectid, objecttype, authorid,
     repo['cxref'].append(cxref)
 
 
-def get_features_by_familyname(repo, familyname):
+def get_features_by_family_name(repo, familyname):
     family = get_family_by_name(repo, familyname);
     featurefamilies = [ffx for ffx in repo['ffxref'] if ffx['family']['idfamily'] == family['idfamily']]
     features = [f['feature'] for f in featurefamilies]
