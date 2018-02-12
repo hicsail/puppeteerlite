@@ -4,7 +4,7 @@
 CWD=$(pwd)
 
 # Start Constellation server
-cd /Users/sarahleinicke/IdeaProjects/constellationjs/constellation-js/ && node server.js &
+cd CONSTELLATION_HOME && node server.js &
 
 # Run front-end
 cd $CWD
