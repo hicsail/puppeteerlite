@@ -5,6 +5,10 @@ A tool that parses GenBank files according to the user's protocol and design spe
 ## Requirements
 
 - Python3
+```
+$ brew install python3
+```
+
 - biopython 
 ```
 $ pip install biopython
