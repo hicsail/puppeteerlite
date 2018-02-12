@@ -1,6 +1,6 @@
 # PuppeteerLite
 
-A tool that parses GenBank files prints Tecan robot instructions in gwl format.
+A tool that parses GenBank files according to the user's protocol and design specifications, and prints Tecan robot instructions in gwl format.
 
 ## Requirements
 
