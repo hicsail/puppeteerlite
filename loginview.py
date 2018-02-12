@@ -33,7 +33,7 @@ def login_view():
     sys.stdout = orig_stdout
     f.close()
 
-    print('Finished!  Results are in request.json.')
+    print('Front end printed results to request.json')
 
 
 login_view()
