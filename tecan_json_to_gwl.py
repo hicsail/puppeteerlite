@@ -286,4 +286,4 @@ def get_source_well_numbers():
 
 
 
-#tecan_json_to_gwl('response.json')
+tecan_json_to_gwl('response.json')
