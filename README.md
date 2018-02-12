@@ -28,15 +28,17 @@ $ ./run_puppeteer_lite
 
 ## Input Data 
 
-1. GenBank Files
-..* For now, a default input archive, HeadtoHead2.zip, is in the repository.  So, the user does not have to provide input data.
-2. Protocol Specification
-..* Puppeteer Lite currently uses the MoClo Assembly Protocol.
-3. Design Specification
-..* Puppeteer Lite currently assumes the following design specification: 'promoter.rbs.cds.terminator'.
+- GenBank Files
+  - For now, a default input archive, HeadtoHead2.zip, is in the repository.  So, the user does not have to provide input data.
+- Protocol Specification
+  - Puppeteer Lite currently uses the MoClo Assembly Protocol.
+- Design Specification
+  - Puppeteer Lite currently assumes the following design specification: 'promoter.rbs.cds.terminator'.
 
 ## Output Files
 
 PuppeteerLite writes two files to the local directory:
-- *Tecan_Directions.gwl* (Provides Tecan robot instructions)
-- *Tecan_Directions.with_Source_Part_Assignments.txt* (Lists source part well number assignments)
+- *Tecan_Directions.gwl* 
+  - Provides Tecan robot instructions
+- *Tecan_Directions.with_Source_Part_Assignments.txt*
+  - Lists source part well number assignments
