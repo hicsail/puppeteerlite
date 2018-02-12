@@ -28,11 +28,11 @@ $ ./run_puppeteer_lite
 
 ## Input Data 
 
-- GenBank Files
+1. GenBank Files
 ..* For now, a default input archive, HeadtoHead2.zip, is in the repository.  So, the user does not have to provide input data.
-- Protocol Specification
+2. Protocol Specification
 ..* Puppeteer Lite currently uses the MoClo Assembly Protocol.
-- Design Specification
+3. Design Specification
 ..* Puppeteer Lite currently assumes the following design specification: 'promoter.rbs.cds.terminator'.
 
 ## Output Files
