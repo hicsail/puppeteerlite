@@ -1,6 +1,6 @@
 # PuppeteerLite
 
-A tool that parses GenBank files according to user's protocol and design specifications and prints Tecan robot instructions in gwl format.
+A tool that parses GenBank files prints Tecan robot instructions in gwl format.
 
 ## Requirements
 
@@ -26,9 +26,14 @@ $ chmod u+x run_puppeteer_lite
 $ ./run_puppeteer_lite
 ```
 
-## Input Archive 
+## Input Data 
 
-- For now, a default input archive, HeadtoHead2.zip, is in the repository.  So, the user does not have to provide input data.
+- GenBank Files
+..* For now, a default input archive, HeadtoHead2.zip, is in the repository.  So, the user does not have to provide input data.
+- Protocol Specification
+..* Puppeteer Lite currently uses the MoClo Assembly Protocol.
+- Design Specification
+..* Puppeteer Lite currently assumes the following design specification: 'promoter.rbs.cds.terminator'.
 
 ## Output Files
 
