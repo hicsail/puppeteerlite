@@ -1,0 +1,16 @@
+#!/bin/bash
+
+CONSTELLATION='CONSTELLATION_HOME && node server.js'
+
+FRONTEND='python3 loginview.py' 
+
+BACKEND='curl -H "Content-Type: application/json" -d @request.json -X POST "http://128.31.25.45:8080/penguin-services-0.1.0/build"'
+
+GWL='python3 tecan_json_to_gwl.py'
+
+eval $CONSTELLATION
+eval $FRONTEND
+eval $BACKEND
+eval $GWL
+
+echo 'Printed Tecan instructions.'
