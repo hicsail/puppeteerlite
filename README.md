@@ -19,13 +19,14 @@ $ pip install biopython
 $ git clone git@github.com:hicsail/constellation-js.git
 $ cd constellation-js
 $ npm install
+$ npm install express
 ```
 
 ## Run PuppeteerLite
 
 - Edit the line 7 of the 'run_puppeteer_lite' bash script (shown below).  Instead of "CONSTELLATION_HOME", write Constellation's home directory.
 ```
-cd CONSTELLAION_HOME && npm install express && node demos/server.js &
+cd CONSTELLAION_HOME && node demos/server.js &
 ```
 
 - Enter these commands to run Puppeteer Lite.
