@@ -25,7 +25,7 @@ $ npm install
 
 - Edit the line 7 of the 'run_puppeteer_lite' bash script (shown below).  Instead of "CONSTELLATION_HOME", write Constellation's home directory.
 ```
-cd CONSTELLATION_HOME && node server.js &
+cd CONSTELLAION_HOME && npm install express && node demos/server.js &
 ```
 
 - Enter these commands to run Puppeteer Lite.
