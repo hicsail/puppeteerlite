@@ -6,7 +6,7 @@ import sys
 import uuid
 
 ZIPFILE = 'HeadtoHead2.zip'
-CONSTELLATION_URL = 'http://localhost:8082/postSpecs'
+CONSTELLATION_URL = 'http://34.227.115.255/postSpecs'
 CONCENTRATION_NG_UL = 25.0
 CONCENTRATION_UNIT = 'NANOGRAMS_PER_MICROLITER'
 VOLUME_UNIT = 'MICROLITERS'

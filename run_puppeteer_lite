@@ -1,17 +1,7 @@
 #!/bin/bash
 
-# Get current working directory
-CWD=$(pwd)
-
-# Start Constellation server
-cd CONSTELLATION_HOME && node demos/server.js &
-
 # Run front-end
-cd $CWD
 python3 loginview.py
-
-# Stut down Constellation node server
-kill $(lsof -t -i:8082)
 
 # Run back-end
 curl -H "Content-Type: application/json" -d @request.json -X POST "http://128.31.25.45:8080/penguin-services-0.1.0/build" -o response.json
