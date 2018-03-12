@@ -30,15 +30,17 @@ cd CONSTELLAION_HOME && node demos/server.js &
 ```
 
 - Enter these commands to run Puppeteer Lite.
+- To use a different input archive, write a different zip file name, instead of "HeadtoHead2.zip."
+- The zip file must be in the same directory from which the user executes the commands below.
 ```
 $ chmod u+x run_puppeteer_lite
-$ ./run_puppeteer_lite
+$ ./run_puppeteer_lite HeadtoHead2.zip
 ```
 
 ## Input Data 
 
 - GenBank Files
-  - For now, a default input archive, HeadtoHead2.zip, is in the repository.  So, the user does not have to provide input data.
+  - An example input archive, HeadtoHead2.zip, is in the repository. 
 - Protocol Specification
   - Puppeteer Lite currently uses the MoClo Assembly Protocol.
 - Design Specification

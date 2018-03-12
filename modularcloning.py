@@ -69,7 +69,7 @@ def make_project(repo, instanceid, authorid, date):
 
 def unzip_file(archive):
     with zipfile.ZipFile(archive, 'r') as archive:
-        archive.extractall('HeadtoHead2.zip' + '-contents')
+        archive.extractall(archive.filename + '-contents')
 
 
 def get_subdirectories(archive):

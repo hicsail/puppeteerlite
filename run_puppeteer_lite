@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Run front-end
-python3 loginview.py
+# Run front-end 
+python3 loginview.py $1
 
 # Run back-end
 curl -H "Content-Type: application/json" -d @request.json -X POST "http://128.31.25.45:8080/penguin-services-0.1.0/build" -o response.json

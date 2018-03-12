@@ -5,7 +5,7 @@ import buildproject
 import sys
 import uuid
 
-ZIPFILE = 'HeadtoHead2.zip'
+
 CONSTELLATION_URL = 'http://34.227.115.255/postSpecs'
 CONCENTRATION_NG_UL = 25.0
 CONCENTRATION_UNIT = 'NANOGRAMS_PER_MICROLITER'
@@ -16,6 +16,7 @@ def login_view():
     authorid = str(uuid.uuid4())
     instanceid = str(uuid.uuid4())
     date = datetime.date.today()
+    ZIPFILE = sys.argv[1]
 
     # Parse input files, populate 'repo' dict
     repo = modularcloning.make_repo(ZIPFILE, instanceid, authorid, date);
