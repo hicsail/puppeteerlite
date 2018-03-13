@@ -17,12 +17,13 @@ def login_view():
     instanceid = str(uuid.uuid4())
     date = datetime.date.today()
     ZIPFILE = sys.argv[1]
+    NUMDESIGNS = sys.argv[2]
 
     # Parse input files, populate 'repo' dict
     repo = modularcloning.make_repo(ZIPFILE, instanceid, authorid, date);
 
     # Get Constellation results, add to 'repo' dict
-    specificationview.set_specification(repo, CONSTELLATION_URL, authorid, date);
+    specificationview.set_specification(repo, CONSTELLATION_URL, authorid, date, NUMDESIGNS);
 
     # Create output json
     request = buildproject.generate_build_request(repo, CONCENTRATION_NG_UL, CONCENTRATION_UNIT, VOLUME_UNIT, authorid)

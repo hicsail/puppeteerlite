@@ -29,12 +29,13 @@ $ npm install express
 cd CONSTELLAION_HOME && node demos/server.js &
 ```
 
-- Enter these commands to run Puppeteer Lite.
-- To use a different input archive, write a different zip file name, instead of "HeadtoHead2.zip."
-- The zip file must be in the same directory from which the user executes the commands below.
+- Enter the commands below to run Puppeteer Lite.
+- The format is as follows:  "./run_puppeteer_lite  [input archive] [number of designs requested]"
+- The example below uses the 'HeadtoHead2.zip' input archive and requests 40 combinatorial designs.
+- The input archive must be in the same directory in which the user runs commands.
 ```
 $ chmod u+x run_puppeteer_lite
-$ ./run_puppeteer_lite HeadtoHead2.zip
+$ ./run_puppeteer_lite HeadtoHead2.zip 40
 ```
 
 ## Input Data 

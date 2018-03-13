@@ -4,13 +4,13 @@ import sys
 import gff3design
 
 
-def set_specification(repo, constellation_url, authorid, datecreated):
-    constellationdict, partslibrarydict = get_constellation_output(repo, constellation_url, authorid)
+def set_specification(repo, constellation_url, authorid, datecreated, NUMDESIGNS):
+    constellationdict, partslibrarydict = get_constellation_output(repo, constellation_url, authorid, NUMDESIGNS)
     save_designs(repo, constellationdict, authorid, datecreated, partslibrarydict)
 
 
-def get_constellation_output(repo, constellation_url, userid):
-    constellationinput, partslibrary = get_constellation_input(repo, userid)
+def get_constellation_output(repo, constellation_url, userid, NUMDESIGNS):
+    constellationinput, partslibrary = get_constellation_input(repo, userid, NUMDESIGNS)
 
     headers = {'Content-Type': 'application/json'}
     constellation_output = requests.post(constellation_url, data=constellationinput, headers=headers)
@@ -23,7 +23,7 @@ def get_constellation_output(repo, constellation_url, userid):
     return json.loads(constellation_output.text), partslibrary
 
 
-def get_constellation_input(repo, userid):
+def get_constellation_input(repo, userid, NUMDESIGNS):
     specification, categories, partslibrary, partsdict = build_constellation_input(repo)
 
     constellation_parameter = {}
@@ -32,10 +32,18 @@ def get_constellation_input(repo, userid):
     constellation_parameter['library'] = partslibrary
     constellation_parameter['number'] = '2.0'
     constellation_parameter['name'] = 'specificationname'
-    constellation_parameter['clientid'] = userid
+    constellation_parameter['clientid'] = userid,
+    constellation_parameter['numDesigns'] = NUMDESIGNS
     constellation = json.dumps(constellation_parameter, indent=4)
 
     # printconstellationinput(constellation) # For debugging
+    orig_stdout = sys.stdout
+    f = open('constellation_input.json', 'w')
+    sys.stdout = f
+    print(constellation)
+    sys.stdout = orig_stdout
+    f.close()
+
     return constellation, partsdict
 
 
