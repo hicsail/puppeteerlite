@@ -9,13 +9,18 @@ A tool that parses GenBank files according to the user's protocol and design spe
         * [Windows Download Link](https://www.python.org/downloads/)
         * [Windows Install Link](https://www.howtogeek.com/197947/how-to-install-python-on-windows/)
 
-  - Unix:
+    * Unix:
     [A guide to install Python3 on Unix](http://docs.python-guide.org/en/latest/starting/install3/linux/)
 
-  - MACOS: 
-    ```
+    * MACOS: 
+      * Install Homebrew
+      ```
+      $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+      ```
+      * Install Python3
+      ```
       $ brew install python3
-     ```
+      ```
 
 - Pip
 
@@ -32,10 +37,7 @@ A tool that parses GenBank files according to the user's protocol and design spe
 
 ## Run PuppeteerLite
 
-- Edit the line 7 of the 'run_puppeteer_lite' bash script (shown below).  Instead of "CONSTELLATION_HOME", write Constellation's home directory.
-    ```
-    cd CONSTELLAION_HOME && node demos/server.js &
-    ```
+- Clone or download this repository    
 
 - Enter the commands below to run Puppeteer Lite.
 The format is as follows:  "./run_puppeteer_lite  [input archive] [number of designs requested]"
@@ -50,7 +52,8 @@ $ ./run_puppeteer_lite HeadtoHead2.zip 40
 ## Input Data 
 
 - GenBank Files
-  - An example input archive, HeadtoHead2.zip, is in the repository. 
+  - An example input archive, HeadtoHead2.zip, is in the repository 
+  *Zip files must follow the same folder structure*
 - Protocol Specification
   - Puppeteer Lite currently uses the MoClo Assembly Protocol.
 - Design Specification
