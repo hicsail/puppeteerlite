@@ -38,9 +38,9 @@ A tool that parses GenBank files according to the user's protocol and design spe
     ```
 
 - Enter the commands below to run Puppeteer Lite.
-- The format is as follows:  "./run_puppeteer_lite  [input archive] [number of designs requested]"
-- The example below uses the 'HeadtoHead2.zip' input archive and requests 40 combinatorial designs.
-- The input archive must be in the same directory in which the user runs commands.
+The format is as follows:  "./run_puppeteer_lite  [input archive] [number of designs requested]"
+The example below uses the 'HeadtoHead2.zip' input archive and requests 40 combinatorial designs.
+The input archive must be in the same directory in which the user runs commands.
 ```
 $ chmod u+x run_puppeteer_lite
 $ ./run_puppeteer_lite HeadtoHead2.zip 40
