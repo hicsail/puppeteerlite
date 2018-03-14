@@ -30,14 +30,6 @@ A tool that parses GenBank files according to the user's protocol and design spe
     $ pip install biopython
     ```
 
-- Constellation 
-    ```
-    $ git clone git@github.com:hicsail/constellation-js.git
-    $ cd constellation-js
-    $ npm install
-    $ npm install express
-    ```
-
 ## Run PuppeteerLite
 
 - Edit the line 7 of the 'run_puppeteer_lite' bash script (shown below).  Instead of "CONSTELLATION_HOME", write Constellation's home directory.
