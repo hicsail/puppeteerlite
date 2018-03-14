@@ -281,6 +281,6 @@ def main(archive):
     if 'HeadtoHead2' in archive:
         use_hard_coded_well_numbers = True
 
-    tecan_json_to_gwl('response_correct.json', use_hard_coded_well_numbers)
+    tecan_json_to_gwl('response.json', use_hard_coded_well_numbers)
 
 main(sys.argv[1])
