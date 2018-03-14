@@ -10,7 +10,7 @@ OUTPUT_FILE_WITH_SOURCE_WELLS = 'Tecan_Directions_with_Source_Part_Assignments.t
 SOURCEPLATE = 'DNASourcePlate'
 DESTPLATE = 'MoCloDestinationPlate'
 WELL = '96 Well Microplate'
-# TO DO - get hard-coded source wells numbers from user?
+
 MAX_SOURCEPLATE_ROW = 6    # rows A(1) to F(7) in source well plate
 MAX_DESTPLATE_ROW   = 7    # rows A(1) to G(7) in destination well plate
 
