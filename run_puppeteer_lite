@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Validate user input
+if [ "$#" -ne 3 ]; then
+    echo "Please provide the input archive name and the number of combinatorial designs."
+    echo "Example usage: ./run_puppeteer_lite HeadtoHead2.zip 40"
+    exit 1
+fi
+
 # Run front-end
 python3 loginview.py $1 $2
 
