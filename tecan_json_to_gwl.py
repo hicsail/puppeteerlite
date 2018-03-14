@@ -2,11 +2,15 @@ import sys
 import json
 import collections
 
+
+# Output file names
 OUTPUT_FILE = 'Tecan_Directions.gwl'
 OUTPUT_FILE_WITH_SOURCE_WELLS = 'Tecan_Directions_with_Source_Part_Assignments.txt'
+
 SOURCEPLATE = 'DNASourcePlate'
 DESTPLATE = 'MoCloDestinationPlate'
 WELL = '96 Well Microplate'
+# TO DO - get hard-coded source wells numbers from user?
 MAX_SOURCEPLATE_ROW = 6    # rows A(1) to F(7) in source well plate
 MAX_DESTPLATE_ROW   = 7    # rows A(1) to G(7) in destination well plate
 
@@ -21,14 +25,15 @@ def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
         hard_coded_source_well_nums = get_hard_coded_source_well_numbers()
 
     wells_to_parts, rc_to_wn = make_source_part_dicts(tecan_directions, hard_coded_source_well_nums)
-
-    aspirate, dispense, source_wells = process_puppeteer_instructions(tecan_directions, rc_to_wn)
+    aspirate, dispense, source_wells = process_puppeteer_instructions(tecan_directions, rc_to_wn, use_hard_coded_well_numbers)
 
     print_gwl(aspirate, dispense)
-    print_txt(wells_to_parts, source_wells, aspirate, dispense, wells_to_parts)
+    print_txt(wells_to_parts, source_wells, aspirate, dispense)
 
 
-def process_puppeteer_instructions(puppeteer_output, rc_to_wn):
+
+
+def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_well_numbers):
     '''
     Retrieves wet-lab robot commands from Puppeteer output. Parses output in blocks of
     text, between 'aspirate' and 'droptips'.
@@ -51,7 +56,10 @@ def process_puppeteer_instructions(puppeteer_output, rc_to_wn):
             row, col, volume = get_row_col_volume(fields)
 
             if 'aspirate' in fields[0].lower():
-                well_number = get_source_well_number(row, col)
+                if use_hard_coded_well_numbers:
+                    well_number = rc_to_wn[str(row)+str(col)]
+                else:
+                    well_number = get_source_well_number(row, col)
                 aspirate_command = 'A;' + SOURCEPLATE + ';;' + WELL + ';' + str(well_number) + ';;' + volume
                 aspirate.append(aspirate_command)
                 source_wells.append(well_number)
@@ -99,7 +107,6 @@ def make_source_part_dicts(puppeteer_output, hard_coded_well_numbers):
                 well_number = get_source_well_number(row, col)
             wells_to_parts[well_number] = part_name
 
-            # Puppeteer's rowcol : well number
             rc_to_wn[str(row) + str(col)] = well_number
 
     wells_to_parts = collections.OrderedDict(sorted(wells_to_parts.items()))
@@ -227,14 +234,15 @@ def get_hard_coded_source_well_numbers():
     return names_to_wells
 
 
-def print_txt(parts_dict, source_wells, aspirate, dispense, names_to_wells):
+def print_txt(wells_to_parts, source_wells, aspirate, dispense):
     orig_stdout = sys.stdout
     f = open(OUTPUT_FILE_WITH_SOURCE_WELLS, 'w')
     sys.stdout = f
 
-    sorted_names_to_wells = sorted(names_to_wells.items(), key=lambda x: x[0])
-    print_source_parts_list(sorted_names_to_wells)
-    print_instructions_with_source_parts(aspirate, dispense, source_wells, parts_dict)
+    sorted_wells_to_parts = sorted(wells_to_parts.items(), key=lambda x: x[0])
+
+    print_source_parts_list(sorted_wells_to_parts)
+    print_instructions_with_source_parts(aspirate, dispense, source_wells, wells_to_parts)
 
     sys.stdout = orig_stdout
     f.close()
@@ -250,19 +258,17 @@ def print_source_parts_list(names_to_wells):
             print(wellnum,'....................', part)
     print('\n\n')
 
-
-def print_instructions_with_source_parts(aspirate, dispense, source_wells, parts_dict):
+def print_instructions_with_source_parts(aspirate, dispense, source_wells, wells_to_parts):
     '''
     Prints Tecan instructions with source part names on 'aspirate' lines.
     '''
     for x in range(0, len(aspirate)):
         well_number_in_command = source_wells[x]
-        if well_number_in_command in parts_dict:
-            part_name = parts_dict[well_number_in_command]
+        if well_number_in_command in wells_to_parts:
+            part_name = wells_to_parts[well_number_in_command]
         print(aspirate[x].strip() + '\t' + part_name)
         print(dispense[x].strip())
         print('W;\n')
-
 
 def print_gwl(aspirate, dispense):
     orig_stdout = sys.stdout
