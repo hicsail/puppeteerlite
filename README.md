@@ -27,12 +27,12 @@ A tool that parses GenBank files according to the user's protocol and design spe
     Install using https://pip.pypa.io/en/stable/installing/
     
     
- - biopython
+- Dependencies
  
-    Once Python3 is intalled, biopython can be installed using pip
+    Additional dependencies can now be installed with pip 
 
     ```
-    $ pip install biopython
+    $ pip install biopython requests
     ```
 
 ## Run PuppeteerLite
