@@ -34,7 +34,7 @@ def persist(repo, gff3parts, gff3design, authorid, datecreated):
     save_constituent_part_references(repo, constituentparts, part)
     create_moclo_constituent_part_features(repo, part, constituentparts, authorid, datecreated)
     make_plasmid(repo, constituentparts, part, authorid, datecreated)
-
+    return sequence;
 
 
 def get_constituent_parts(repo, gff3parts):

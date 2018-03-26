@@ -1,50 +1,65 @@
 import requests
 import json
 import sys
-import gff3design
+import uuid
+import process_constellation_output
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Alphabet import IUPAC
 
 
 def set_specification(repo, constellation_url, authorid, datecreated, NUMDESIGNS):
-    constellationdict, partslibrarydict = get_constellation_output(repo, constellation_url, authorid, NUMDESIGNS)
-    save_designs(repo, constellationdict, authorid, datecreated, partslibrarydict)
+    constellation_dict, parts_dict = get_constellation_output(repo, constellation_url, authorid, NUMDESIGNS)
+    sequences = save_designs(repo, constellation_dict, authorid, datecreated, parts_dict)
+    gb_records = string_to_genebank(sequences)
+    return gb_records
+
+def string_to_genebank(sequences):
+    ctr = 0
+    gb_records = []
+    for seq in sequences:
+        sequence_object = Seq(seq, IUPAC.unambiguous_dna)
+        gb_record = SeqRecord(sequence_object,
+                              id=str(uuid.uuid4()),
+                              name='Design_' + str(ctr),
+                              description='Sequence for Puppeteer Design ' + str(ctr) + ".")
+        gb_records.append(gb_record)
+        ctr += 1
+    return gb_records
+
 
 
 def get_constellation_output(repo, constellation_url, userid, NUMDESIGNS):
-    constellationinput, partslibrary = get_constellation_input(repo, userid, NUMDESIGNS)
+    constellation_input, parts_string = get_constellation_input(repo, userid, NUMDESIGNS)
 
     headers = {'Content-Type': 'application/json'}
-    constellation_output = requests.post(constellation_url, data=constellationinput, headers=headers)
+    constellation_output = requests.post(constellation_url, data=constellation_input, headers=headers)
 
     if 'Error' in str(constellation_output.text):
         print('Constellation status code: ', constellation_output.status_code)
         print('Constellation output: ', constellation_output.text)
         raise ValueError('Error retrieving Constellation output.')
 
-    return json.loads(constellation_output.text), partslibrary
+    return json.loads(constellation_output.text), parts_string
 
 
 def get_constellation_input(repo, userid, NUMDESIGNS):
-    specification, categories, partslibrary, partsdict = build_constellation_input(repo)
+    specification, categories, parts_string, parts_dict = build_constellation_input(repo)
 
     constellation_parameter = {}
     constellation_parameter['specification']= specification
     constellation_parameter['categories'] = json.dumps(categories)
-    constellation_parameter['library'] = partslibrary
+    constellation_parameter['library'] = parts_string
     constellation_parameter['number'] = '2.0'
     constellation_parameter['name'] = 'specificationname'
     constellation_parameter['clientid'] = userid,
     constellation_parameter['numDesigns'] = NUMDESIGNS
     constellation = json.dumps(constellation_parameter, indent=4)
 
-    # printconstellationinput(constellation) # For debugging
-    orig_stdout = sys.stdout
-    f = open('constellation_input.json', 'w')
-    sys.stdout = f
-    print(constellation)
-    sys.stdout = orig_stdout
-    f.close()
+    # For debugging
+    print_constellation_input(constellation)
 
-    return constellation, partsdict
+    return constellation, parts_dict
 
 
 
@@ -68,8 +83,9 @@ def build_constellation_input(repo):
     referredcollections = []
     referredparts = []
     categories = {}
-    partslibrary = ''
+    parts_string = ''
     partsdict = {}
+
 
     operators = ['any', 'many', '.', 'or', 'and', 'not', 'invert', '{', '}']
     for token in tokens:
@@ -113,7 +129,7 @@ def build_constellation_input(repo):
                                     else:
                                         forcolornum = str(feature['forcolor'] % 14)
 
-                                    partslibrary = partslibrary + '"' + part['name'] + ' ' + \
+                                    parts_string = parts_string + '"' + part['name'] + ' ' + \
                                                       forcolornum + ' ' + part['nucseq']['sequence'].strip().lower() +\
                                                         '"\n'
                                     partsdict[part['name']] = part['nucseq']['sequence'].strip().lower()
@@ -121,7 +137,7 @@ def build_constellation_input(repo):
                                     referredparts.append(part['idpart'])
 
     # TODO resolve: partslibrary and partsdict are duplicative, except partslibrary has forcolornum
-    return specificationstring, categories, partslibrary, partsdict
+    return specificationstring, categories, parts_string, partsdict
 
 
 def get_part_family(repo, part):
@@ -162,10 +178,13 @@ def get_part_feature(repo, part):
 
 def save_designs(repo, constellationdict, authorid, datecreated, partsdict):
     countdesigns = 0
+    sequences = [];
     for design in constellationdict['designs']:
-        gff3 = gff3design.make_GFF3_design(repo, design, countdesigns, partsdict)
-        gff3design.persist(repo, gff3['gff3parts'], gff3, authorid, datecreated)
+        gff3 = process_constellation_output.make_GFF3_design(repo, design, countdesigns, partsdict)
+        sequence = process_constellation_output.persist(repo, gff3['gff3parts'], gff3, authorid, datecreated)
+        sequences.append(sequence)
         countdesigns += 1
+    return sequences;
 
 
 def print_constellation_input(constellationinput):

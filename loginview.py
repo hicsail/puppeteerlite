@@ -1,9 +1,11 @@
 import datetime
 import modularcloning
-import specificationview
+import make_constellation_request
 import buildproject
+import os
 import sys
 import uuid
+from Bio import SeqIO
 
 
 CONSTELLATION_URL = 'http://34.227.115.255/postSpecs'
@@ -23,11 +25,15 @@ def login_view():
     repo = modularcloning.make_repo(ZIPFILE, instanceid, authorid, date)
 
     # Get Constellation results, add to 'repo' dict
-    specificationview.set_specification(repo, CONSTELLATION_URL, authorid, date, NUMDESIGNS)
+    gb_records = make_constellation_request.set_specification(repo, CONSTELLATION_URL, authorid, date, NUMDESIGNS)
 
     # Create output json
     request = buildproject.generate_build_request(repo, CONCENTRATION_NG_UL, CONCENTRATION_UNIT, VOLUME_UNIT, authorid)
 
+    # Write GB files
+    write_gb_files(NUMDESIGNS, gb_records)
+
+    # Write request.json file
     orig_stdout = sys.stdout
     f = open('request.json', 'w')
     sys.stdout = f
@@ -38,6 +44,14 @@ def login_view():
     print('Front end printed results to request.json')
 
 
+def write_gb_files(NUMDESIGNS, gb_records):
+    gb_directory = str(NUMDESIGNS) + "_GB_Sequences"
+    os.mkdir(gb_directory)
+    ctr = 0
+    for gb in gb_records:
+        gb_file = "./" + gb_directory + '/Design_' + str(ctr) + '.gb'
+        output_file = open(gb_file, 'w')
+        SeqIO.write(gb, output_file, 'genbank')
+        ctr += 1
+
 login_view()
-
-
