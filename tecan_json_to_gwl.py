@@ -1,11 +1,12 @@
 import sys
 import json
 import collections
-
+import string
 
 # Output file names
 OUTPUT_FILE = 'Tecan_Directions.gwl'
 OUTPUT_FILE_WITH_SOURCE_WELLS = 'Tecan_Directions_with_Source_Part_Assignments.txt'
+OUTPUT_EXPERIMENT_SUMMARY = 'Experiment_Summary.txt'
 
 SOURCEPLATE = 'DNASourcePlate'
 DESTPLATE = 'MoCloDestinationPlate'
@@ -13,7 +14,6 @@ WELL = '96 Well Microplate'
 
 MAX_SOURCEPLATE_ROW = 6    # rows A(1) to F(7) in source well plate
 MAX_DESTPLATE_ROW   = 7    # rows A(1) to G(7) in destination well plate
-
 
 def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
 
@@ -25,13 +25,62 @@ def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
         hard_coded_source_well_nums = get_hard_coded_source_well_numbers()
 
     wells_to_parts, rc_to_wn = make_source_part_dicts(tecan_directions, hard_coded_source_well_nums)
-    aspirate, dispense, source_wells = process_puppeteer_instructions(tecan_directions, rc_to_wn, use_hard_coded_well_numbers)
+    aspirate, dispense, source_wells, well_to_volume = process_puppeteer_instructions(tecan_directions, rc_to_wn, use_hard_coded_well_numbers)
 
     print_gwl(aspirate, dispense)
     print_txt(wells_to_parts, source_wells, aspirate, dispense)
+    print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume)
 
+def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume):
+    print(wells_to_parts)
+    print(rc_to_wn)
+    print(well_to_volume)
 
+    with open('constellationinput.json') as file:
+        constellation_input_json = json.load(file)
 
+    categories = json.loads(constellation_input_json['categories'])
+    used_categories = {}
+    part_volumes = {}
+    for key in categories.keys():
+        used_categories[key] = []
+
+    # Make sure all parts sent to constellation get used
+    all_parts = wells_to_parts.values()
+    for part in all_parts:
+        for key,val_list in categories.items():
+            if 'Part-'+part in val_list:
+                used_categories[key].append(part)
+                if part not in part_volumes:
+                    part_volumes[part] = 0
+                break
+
+    with open(OUTPUT_EXPERIMENT_SUMMARY, 'w') as file:
+        file.write('Total Plates Used: 3\n')
+        file.write('Number of Assemblies:' + constellation_input_json['numDesigns'] +'\n')
+
+        file.write('\n')
+        file.write('Reagents Used:\n')
+        indices = [i for i, x in enumerate(all_parts) if 'Master Mix' in x] # get all master mixes
+        for i in indices:
+            master_mix = list(wells_to_parts.items())[i][1]
+            wellnum = list(wells_to_parts.keys())[list(wells_to_parts.values()).index(master_mix)] # get well num from part
+            part_vol = well_to_volume[wellnum]
+            file.write(master_mix + ':' + str(part_vol) +'\n')
+
+        file.write('\n')
+        file.write('Parts Used:\n')
+        file.write('\n')
+        for category, part_list in used_categories.items():
+            file.write(category.upper() + ': \n')
+            for part in part_list:
+                wellnum = list(wells_to_parts.keys())[list(wells_to_parts.values()).index(part)] # get well num from part
+                part_vol = well_to_volume[wellnum]
+                file.write(part + ':' + str(part_vol) +'\n')
+            file.write('\n')
+
+        file.write('\n')
+        file.write('Q-value: \n')
 
 def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_well_numbers):
     '''
@@ -44,6 +93,7 @@ def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_we
     aspirate = []
     dispense = []
     source_wells = []
+    well_to_volume = {}
 
     # Get block from 'aspirate' line to 'droptips' line
     puppeteer_output_block, rest_of_file = get_aspirate_to_droptips(puppeteer_output)
@@ -57,12 +107,15 @@ def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_we
 
             if 'aspirate' in fields[0].lower():
                 if use_hard_coded_well_numbers:
-                    well_number = rc_to_wn[str(row)+str(col)]
+                    well_number = rc_to_wn[str(row)+str(col)] # numeric for tecan
                 else:
                     well_number = get_source_well_number(row, col)
                 aspirate_command = 'A;' + SOURCEPLATE + ';;' + WELL + ';' + str(well_number) + ';;' + volume
                 aspirate.append(aspirate_command)
                 source_wells.append(well_number)
+                if well_number not in well_to_volume:
+                    well_to_volume[well_number] = 0
+                well_to_volume[well_number] += float(volume)
 
             elif 'dispense' in fields[0].lower():
                 well_number = get_dest_well_number(row, col)
@@ -70,7 +123,7 @@ def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_we
 
         puppeteer_output_block, rest_of_file = get_aspirate_to_droptips(rest_of_file)
 
-    return aspirate, dispense, source_wells
+    return aspirate, dispense, source_wells, well_to_volume
 
 
 

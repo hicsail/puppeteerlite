@@ -56,8 +56,7 @@ def get_constellation_input(repo, userid, NUMDESIGNS):
     constellation_parameter['numDesigns'] = NUMDESIGNS
     constellation = json.dumps(constellation_parameter, indent=4)
 
-    # For debugging
-    print_constellation_input(constellation)
+    print_constellation_input(constellation) # need this
 
     return constellation, parts_dict
 
