@@ -1,7 +1,7 @@
 import datetime
-import modularcloning
+import process_input_data
 import make_constellation_request
-import buildproject
+import make_puppeteer_request
 import os
 import sys
 import uuid
@@ -22,13 +22,13 @@ def login_view():
     NUMDESIGNS = sys.argv[2]
 
     # Parse input files, populate 'repo' dict
-    repo = modularcloning.make_repo(ZIPFILE, instanceid, authorid, date)
+    repo = process_input_data.make_repo(ZIPFILE, instanceid, authorid, date)
 
     # Get Constellation results, add to 'repo' dict
     gb_records = make_constellation_request.set_specification(repo, CONSTELLATION_URL, authorid, date, NUMDESIGNS)
 
     # Create output json
-    request = buildproject.generate_build_request(repo, CONCENTRATION_NG_UL, CONCENTRATION_UNIT, VOLUME_UNIT, authorid)
+    request = make_puppeteer_request.generate_build_request(repo, CONCENTRATION_NG_UL, CONCENTRATION_UNIT, VOLUME_UNIT, authorid)
 
     # Write GB files
     write_gb_files(NUMDESIGNS, gb_records)
