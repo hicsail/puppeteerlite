@@ -1,5 +1,5 @@
 import repository
-import fastapart
+import fasta_part
 import uuid
 
 def make_GFF3_design(repo, design, countdesigns, partsdict):
@@ -28,8 +28,8 @@ def persist(repo, gff3parts, gff3design, authorid, datecreated):
     # We only use FASTAS to make compositexrefs objects,
     # which cross reference repo parts and constellation results.
     sequence = compute_part_sequence(repo, constituentparts)
-    fastas = fastapart.make_fasta(repo, datecreated)
-    part = fastapart.save_part(fastas, gff3design['name'], authorid, gff3design['name'], sequence, datecreated)
+    fastas = fasta_part.make_fasta(repo, datecreated)
+    part = fasta_part.save_part(fastas, gff3design['name'], authorid, gff3design['name'], sequence, datecreated)
 
     save_constituent_part_references(repo, constituentparts, part)
     create_moclo_constituent_part_features(repo, part, constituentparts, authorid, datecreated)

@@ -1,12 +1,13 @@
 import uuid
 import repository
+import sys
 import zipfile
 import os
 from Bio import SeqIO
 
-OVERHANGSFILENAME = 'Overhangs.csv'
-VECTORSFILENAME = 'Vectors.csv'
-PLASMIDSFILENAME = 'Plasmids.csv'
+OVERHANGSFILENAME = 'overhangs.csv'
+VECTORSFILENAME = 'vectors.csv'
+PLASMIDSFILENAME = 'plasmids.csv'
 
 PROTOCOL_FORMAT = 'edu-bu-synbiotools-format-moclo'
 GENEFILE_FORMAT = 'gb'
@@ -14,18 +15,19 @@ GENEFILE_FORMAT = 'gb'
 
 def make_repo(archive, instanceid, authorid, date):
     repo = init_repository()
-    set_default_format(repo);
-    project = make_project(repo, instanceid, authorid, date);
+    set_default_format(repo)
+    project = make_project(repo, instanceid, authorid, date)
 
     unzip_file(archive)
     archivefilepath = os.getcwd()
 
     subdirectoriesfolder, subdirectories = get_subdirectories(str(archive))
-    overhangfiles, vectorfiles, plasmidfiles = get_filenames(subdirectories, subdirectoriesfolder)
+    write_csv_files(subdirectories, subdirectoriesfolder)
+    overhangs_csv, vector_csv, plasmid_csvs = get_filenames(subdirectories, subdirectoriesfolder)
 
-    process_overhangs(repo, project, overhangfiles, instanceid, authorid, date);
-    process_vectors(repo, project, vectorfiles, subdirectories, instanceid, authorid, date);
-    process_plasmids(repo, project, plasmidfiles, subdirectories, instanceid, authorid, date);
+    process_overhangs(repo, project, overhangs_csv, instanceid, authorid, date)
+    process_vectors(repo, project, vector_csv, subdirectories, instanceid, authorid, date)
+    process_plasmids(repo, project, plasmid_csvs, subdirectories, instanceid, authorid, date)
 
     os.chdir(archivefilepath)
 
@@ -80,53 +82,118 @@ def get_subdirectories(archive):
         subdirectories.remove('.DS_Store')
     return subdirectoriesfolder, subdirectories
 
+def write_csv_files(subdirectories, homefolder):
+    for subdir in subdirectories:
+        if os.path.isdir(subdir):
+            os.chdir(subdir)
+            files = os.listdir()
+            if 'vector' in subdir.lower():
+                write_vector_csv(files)
+            else:
+                write_plasmid_csv(subdir, files)
+            os.chdir(homefolder)
+
+def write_plasmid_csv(subdir,files):
+    orig_stdout = sys.stdout
+    f = open(PLASMIDSFILENAME, 'w')
+    sys.stdout = f
+    print("FileName,PartFamily,PartName,VectorName,Description")
+    for file in files:
+        index = file.find('.gb')
+        if index > -1:
+            part_name = file[:index]
+
+            overhangs = file[index-2:index]
+            vector = 'DVA_'+overhangs
+            print(file + ',' + subdir + ',' + part_name + ',' + vector + ',')
+    sys.stdout = orig_stdout
+    f.close()
+
+def write_vector_csv(files):
+    files = put_backbone_vector_first(files)
+    orig_stdout = sys.stdout
+    f = open(VECTORSFILENAME, 'w')
+    sys.stdout = f
+    print("FileName,VectorName,Resistance,FivePrimeOverhang,ThreePrimeOverhang,Description")
+    for file in files:
+        index = file.find('.gb')
+        if index > -1:
+            vector_name = file[:index-3]
+            overhangs = file[index-2:index]
+            vector = vector_name + '_'+ overhangs
+            if vector_name == 'DVK':
+                resistance = 'Kanamycin'
+            elif vector_name == 'DVA':
+                resistance = 'Ampicilin'
+            else:
+                raise ValueError('Error. Unknown resistance for vector ' +
+                                 vector_name + '. Please use DVK (resistance Kanamycin) '
+                                               'or DVA (resistance Ampicilin).')
+            print(file + ',' + vector + ',' + resistance + ',' + overhangs[0] + ',' + overhangs[1] + ',')
+    sys.stdout = orig_stdout
+    f.close()
+
+
+def put_backbone_vector_first(files):
+    backbone_file = [f for f in files if 'backbone' in f.lower()][0]
+    files = [f for f in files if 'backbone' not in f.lower()]
+    backbone = backbone_file[len('backbone'):]
+    if backbone[0].upper() != 'D':
+        backbone = backbone[1:]
+
+    os.rename(backbone_file, backbone)
+    files.insert(0, backbone)
+    return files
+
 
 def get_filenames(subdirectories, homefolder):
-    overhangfiles = []
-    vectorfiles = []
-    plasmidfiles = []
-
+    overhang_csv = ''
+    vector_csv = ''
+    plasmid_csvs = []
     for subdir in subdirectories:
+        if not os.path.isdir(subdir):
+            if OVERHANGSFILENAME in subdir.lower():
+                overhang_csv = subdir
+            continue
         os.chdir(subdir)
         files = os.listdir()
-        overhangfiles.append([subdir + '/' + f for f in files if OVERHANGSFILENAME in f][0])
-        vectorfiles.append([subdir + '/' + f for f in files if VECTORSFILENAME in f][0])
-        plasmidfiles.append([subdir + '/' + f for f in files if PLASMIDSFILENAME in f][0])
+        if 'vector' in subdir.lower():
+            vector_csv = [subdir + '/' + f for f in files if VECTORSFILENAME.lower() in f.lower()]
+        else:
+            plasmid_csvs.append([subdir + '/' + f for f in files if PLASMIDSFILENAME.lower() in f.lower()][0])
         os.chdir(homefolder)
+    return overhang_csv, vector_csv, plasmid_csvs
 
-    return overhangfiles, vectorfiles, plasmidfiles
 
+def process_overhangs(repo, project, overhangs_file, instanceid, authorid, date):
 
-def process_overhangs(repo, project, overhangsfiles, instanceid, authorid, date):
+    with open(overhangs_file) as file:
+        inputlines = file.readlines()
 
-    for overhangsfile in overhangsfiles:
-        with open(overhangsfile) as file:
-            inputlines = file.readlines()
+    validate_input_file(inputlines[0], overhangs_file);
 
-        validate_input_file(inputlines[0], overhangsfile);
+    if len(inputlines) <= 1:
+        return
 
-        if len(inputlines) <= 1:
-            return
+    collections = {}
+    collections['authorid'] = authorid
+    collections['datecreated'] = date
+    collections['description'] ='Overhangs described in ' + instanceid
+    collections['name'] = 'overhang-' + instanceid
+    collectionid = uuid.uuid4()
+    collections['idcollection'] = collectionid
 
-        collections = {}
-        collections['authorid'] = authorid
-        collections['datecreated'] = date
-        collections['description'] ='Overhangs described in ' + instanceid
-        collections['name'] = 'overhang-' + instanceid
-        collectionid = uuid.uuid4()
-        collections['idcollection'] = collectionid
+    repo['collections'].append(collections)
+    repository.add_object_to_collection(repo, collectionid, project['idcollection'], 'COLLECTION', authorid, date);
 
-        repo['collections'].append(collections)
-        repository.add_object_to_collection(repo, collectionid, project['idcollection'], 'COLLECTION', authorid, date);
-
-        for line in inputlines:
-            if ',' not in line:
-                continue;
-            tokens = line.split(',')
-            featurename = 'overhang-' + tokens[0]
-            featuresequence = tokens[1].lower()
-            featureid = repository.create_feature(repo, featurename, featuresequence, 'overhang', date);
-            repository.add_object_to_collection(repo, collectionid, featureid, 'FEATURE', authorid, date);
+    for line in inputlines:
+        if ',' not in line:
+            continue;
+        tokens = line.split(',')
+        featurename = 'overhang-' + tokens[0]
+        featuresequence = tokens[1].lower()
+        featureid = repository.create_feature(repo, featurename, featuresequence, 'overhang', date);
+        repository.add_object_to_collection(repo, collectionid, featureid, 'FEATURE', authorid, date);
 
 
 
@@ -170,6 +237,7 @@ def process_vectors(repo, project, vectorsfiles, directories, instanceid, author
                               fiveprimeoverhangname + ', ' + \
                               threeprimeoverhangname + ', ' + resistancename;
 
+            directories = [d for d in directories if os.path.isdir(d)]
             for directory in directories:
                 files = os.listdir(directory)
                 if vectorfilename in files:
@@ -284,6 +352,7 @@ def process_plasmids(repo, project, plasmidsfiles, directories, instanceid, auth
                 description = 'From ' + plasmidfilename + ' part ' + partname + ' vector ' \
                               + vectorname + ' of type ' + partfamily + '.'
 
+            directories = [d for d in directories if os.path.isdir(d)]
             for directory in directories:
                 files = os.listdir(directory)
                 if plasmidfilename in files:
@@ -456,15 +525,16 @@ def read_genbank_file(filename):
 
 def validate_input_file(firstline, filename):
     tokens = firstline.split(',')
-    tokens = [t.lower() for t in tokens]
+    tokens = [t.lower().strip() for t in tokens]
     valid = True
 
-    if 'overhang' in filename:
-        if (not tokens[0] == 'overhangname' or
-                not tokens[1] == 'overhangsequence'):
+    if 'overhang' in filename.lower():
+
+        if (tokens[0] != 'overhangname' or
+                tokens[1] != 'overhangsequence'):
             valid = False
 
-    elif 'vector' in filename:
+    elif 'vector' in filename.lower():
         if (not tokens[0] == 'filename' or
                 not tokens[1] == 'vectorname' or
                 not tokens[2] == 'resistance' or
@@ -473,7 +543,7 @@ def validate_input_file(firstline, filename):
                 not tokens[5] == 'description'):
             valid = False
 
-    elif 'plasmid' in filename:
+    elif 'plasmid' in filename.lower():
         if (not tokens[0] == 'filename' or
                 not tokens[1] == 'partfamily' or
                 not tokens[2] == 'partname' or
