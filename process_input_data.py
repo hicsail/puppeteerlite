@@ -101,10 +101,11 @@ def write_plasmid_csv(subdir,files):
     for file in files:
         index = file.find('.gb')
         if index > -1:
-            part_name = file[:index-3]
+            part_name = file[:index]
+
             overhangs = file[index-2:index]
             vector = 'DVA_'+overhangs
-            print(file + ','+ subdir + ',' + part_name + ',' + vector + ',')
+            print(file + ',' + subdir + ',' + part_name + ',' + vector + ',')
     sys.stdout = orig_stdout
     f.close()
 
