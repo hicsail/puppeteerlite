@@ -15,13 +15,12 @@ CONCENTRATION_UNIT = 'NANOGRAMS_PER_MICROLITER'
 VOLUME_UNIT = 'MICROLITERS'
 
 
-#def login_view():
-def login_view(zip, numdesigns):
+def main():
     authorid = str(uuid.uuid4())
     instanceid = str(uuid.uuid4())
     date = datetime.date.today()
-    ZIPFILE = zip #sys.argv[1]
-    NUMDESIGNS = numdesigns #sys.argv[2]
+    ZIPFILE = sys.argv[1]
+    NUMDESIGNS = sys.argv[2]
 
     # Parse input files, populate 'repo' dict
     repo = process_input_data.make_repo(ZIPFILE, instanceid, authorid, date)
@@ -63,5 +62,4 @@ def write_json_file(request):
 
     print('Front end printed results to request.json')
 
-#login_view()
-login_view('HeadtoHead2New.zip', 3)
+main()

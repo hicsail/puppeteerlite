@@ -109,6 +109,7 @@ def write_plasmid_csv(subdir,files):
     f.close()
 
 def write_vector_csv(files):
+    files = put_backbone_vector_first(files)
     orig_stdout = sys.stdout
     f = open(VECTORSFILENAME, 'w')
     sys.stdout = f
@@ -127,15 +128,27 @@ def write_vector_csv(files):
                 raise ValueError('Error. Unknown resistance for vector ' +
                                  vector_name + '. Please use DVK (resistance Kanamycin) '
                                                'or DVA (resistance Ampicilin).')
-            print(file + ','+ vector + ',' + resistance + ',' + overhangs[0] + ',' + overhangs[1] + ',')
+            print(file + ',' + vector + ',' + resistance + ',' + overhangs[0] + ',' + overhangs[1] + ',')
     sys.stdout = orig_stdout
     f.close()
+
+
+def put_backbone_vector_first(files):
+    backbone_file = [f for f in files if 'backbone' in f.lower()][0]
+    files = [f for f in files if 'backbone' not in f.lower()]
+    backbone = backbone_file[len('backbone'):]
+    if backbone[0].upper() != 'D':
+        backbone = backbone[1:]
+
+    os.rename(backbone_file, backbone)
+    files.insert(0, backbone)
+    return files
+
 
 def get_filenames(subdirectories, homefolder):
     overhang_csv = ''
     vector_csv = ''
     plasmid_csvs = []
-
     for subdir in subdirectories:
         if not os.path.isdir(subdir):
             if OVERHANGSFILENAME in subdir.lower():
@@ -145,11 +158,9 @@ def get_filenames(subdirectories, homefolder):
         files = os.listdir()
         if 'vector' in subdir.lower():
             vector_csv = [subdir + '/' + f for f in files if VECTORSFILENAME.lower() in f.lower()]
-            print('vector csv is ', vector_csv)
         else:
             plasmid_csvs.append([subdir + '/' + f for f in files if PLASMIDSFILENAME.lower() in f.lower()][0])
         os.chdir(homefolder)
-    print('plasmid csvs are ', plasmid_csvs)
     return overhang_csv, vector_csv, plasmid_csvs
 
 
