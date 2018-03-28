@@ -45,10 +45,9 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume):
     for i in range(1,13): # plate numbers
         matrix[0][i] = i
 
-    well_to_matrix = get_wellnum_to_matrix()
     for wellnum, part in wells_to_parts.items():
-        matrix_location = well_to_matrix[wellnum]
-        matrix[int(matrix_location[0])][int(matrix_location[1])] = part
+        row,col = get_wellnum_to_matrix(wellnum)
+        matrix[row][col] = part
 
     categories = json.loads(constellation_input_json['categories'])
     used_categories = {}
@@ -68,6 +67,8 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume):
                 break
 
     with open(OUTPUT_EXPERIMENT_SUMMARY, 'w') as file:
+        file.write('Source Plate Visualization\n')
+        file.write('\n')
         for row in matrix:
             for val in row:
                 file.write('%12s' % str(val))
@@ -306,26 +307,10 @@ def get_hard_coded_source_well_numbers():
     names_to_wells['C0080_CD'] = 23
     return names_to_wells
 
-def get_wellnum_to_matrix():
-    num_to_matrix = {}
-    num_to_matrix[1] = '11'
-    num_to_matrix[2] = '21'
-    num_to_matrix[3] = '31'
-    num_to_matrix[9] = '11'
-    num_to_matrix[10] = '22'
-    num_to_matrix[17] = '13'
-    num_to_matrix[18] = '23'
-    num_to_matrix[19] = '33'
-    num_to_matrix[20] = '43'
-    num_to_matrix[21] = '53'
-    num_to_matrix[22] = '63'
-    num_to_matrix[23] = '73'
-    num_to_matrix[25] = '14'
-    num_to_matrix[33] = '15'
-    num_to_matrix[41] = '16'
-    num_to_matrix[42] = '26'
-    num_to_matrix[43] = '36'
-    return num_to_matrix
+def get_wellnum_to_matrix(wellnum):
+    row = 8 if wellnum%8 == 0 else wellnum%8
+    col = int((wellnum/8)+1)
+    return row, col
 
 
 def print_txt(wells_to_parts, source_wells, aspirate, dispense):
