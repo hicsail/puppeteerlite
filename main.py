@@ -60,6 +60,4 @@ def write_json_file(request):
     sys.stdout = orig_stdout
     f.close()
 
-    print('Front end printed results to request.json')
-
 main()
