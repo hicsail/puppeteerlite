@@ -21,10 +21,13 @@ def make_repo(archive, instanceid, authorid, date):
     unzip_file(archive)
     archivefilepath = os.getcwd()
 
-    subdirectoriesfolder, subdirectories = get_subdirectories(str(archive))
-    write_csv_files(subdirectories, subdirectoriesfolder)
-    overhangs_csv, vector_csv, plasmid_csvs = get_filenames(subdirectories, subdirectoriesfolder)
+    # Write csv files for overhangs, vectors, plasmids
+    home_folder, subdirectories = get_subdirectories(str(archive))
+    overhang_pairs = get_part_overhang_pairs(subdirectories, home_folder)
+    write_csv_files(subdirectories, home_folder, overhang_pairs)
+    overhangs_csv, vector_csv, plasmid_csvs = get_filenames(subdirectories, home_folder)
 
+    # Populate the 'repo' data structure
     process_overhangs(repo, project, overhangs_csv, instanceid, authorid, date)
     process_vectors(repo, project, vector_csv, subdirectories, instanceid, authorid, date)
     process_plasmids(repo, project, plasmid_csvs, subdirectories, instanceid, authorid, date)
@@ -82,16 +85,35 @@ def get_subdirectories(archive):
         subdirectories.remove('.DS_Store')
     return subdirectoriesfolder, subdirectories
 
-def write_csv_files(subdirectories, homefolder):
+def write_csv_files(subdirectories, home_folder, overhang_pairs):
     for subdir in subdirectories:
         if os.path.isdir(subdir):
             os.chdir(subdir)
             files = os.listdir()
             if 'vector' in subdir.lower():
-                write_vector_csv(files)
+                write_vector_csv(files, overhang_pairs)
             else:
                 write_plasmid_csv(subdir, files)
-            os.chdir(homefolder)
+            os.chdir(home_folder)
+
+
+def get_part_overhang_pairs(subdirectories, home_folder):
+    # Get overhangs except those associated with vectors
+    overhang_pairs = []
+    for subdir in subdirectories:
+        if 'vector' in subdir.lower():
+            continue
+        if os.path.isdir(subdir):
+            os.chdir(subdir)
+            files = os.listdir()
+            for file in files:
+                index = file.find('.gb')
+                if index > -1:
+                    overhangs = file[index-2:index]
+                    if overhangs not in overhang_pairs:
+                        overhang_pairs.append(overhangs)
+            os.chdir(home_folder)
+    return overhang_pairs
 
 def write_plasmid_csv(subdir,files):
     orig_stdout = sys.stdout
@@ -102,15 +124,15 @@ def write_plasmid_csv(subdir,files):
         index = file.find('.gb')
         if index > -1:
             part_name = file[:index]
-
             overhangs = file[index-2:index]
             vector = 'DVA_'+overhangs
             print(file + ',' + subdir + ',' + part_name + ',' + vector + ',')
     sys.stdout = orig_stdout
     f.close()
 
-def write_vector_csv(files):
-    files = put_backbone_vector_first(files)
+
+def write_vector_csv(files, overhang_pairs):
+    files = put_backbone_vector_first(files, overhang_pairs)
     orig_stdout = sys.stdout
     f = open(VECTORSFILENAME, 'w')
     sys.stdout = f
@@ -134,16 +156,19 @@ def write_vector_csv(files):
     f.close()
 
 
-def put_backbone_vector_first(files):
-    backbone_file = [f for f in files if 'backbone' in f.lower()][0]
-    files = [f for f in files if 'backbone' not in f.lower()]
-    backbone = backbone_file[len('backbone'):]
-    if backbone[0].upper() != 'D':
-        backbone = backbone[1:]
-
-    os.rename(backbone_file, backbone)
-    files.insert(0, backbone)
-    return files
+def put_backbone_vector_first(files, overhang_pairs):
+    # ID the backbone - the vector with overhangs not in part file names.
+    # The backbone vector is placed first on the list in 'Vector/vectors.csv.'
+    for file in files:
+        index = file.find('.gb')
+        if index > -1:
+            overhangs = file[index-2:index]
+            if overhangs not in overhang_pairs:
+                backbone_vector = file
+                files = [f for f in files if backbone_vector not in f]
+                files.insert(0,backbone_vector)
+                return files
+    raise ValueError('Backbone vector not identified.')
 
 
 def get_filenames(subdirectories, homefolder):
