@@ -63,9 +63,9 @@ $ ./run_puppeteer_lite HeadtoHead2.zip 40
 
 PuppeteerLite writes two files to the local directory:
 - *Tecan_Directions.gwl* 
-  - Provides Tecan robot instructions
+  - Provides Tecan robot instructions.
 - *nGB_Sequences*
-  - A directory with one GeneBank file for each new design created.
+  - A directory with n GeneBank sequences - one for each new design created.
 - *Experiment_Summary.txt*
-  - Provides a visual of source plate assignments, lists parts used and q-value
+  - Provides a visual of source plate assignments and lists parts used.
   
