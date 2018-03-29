@@ -40,8 +40,7 @@ def main():
 
 
 def write_gb_files(NUMDESIGNS, gb_records):
-    now = datetime.datetime.now()
-    gb_directory = now.strftime("%Y-%m-%d") + "-" + str(NUMDESIGNS) + "GB-Sequences"
+    gb_directory = str(NUMDESIGNS) + "GB_Sequences"
     if os.path.exists(gb_directory):
         rmtree(gb_directory)
     os.mkdir(gb_directory)

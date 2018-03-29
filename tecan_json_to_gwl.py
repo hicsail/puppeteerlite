@@ -28,11 +28,10 @@ def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
     aspirate, dispense, source_wells, well_to_volume = process_puppeteer_instructions(tecan_directions, rc_to_wn, use_hard_coded_well_numbers)
 
     print_gwl(aspirate, dispense)
-    print_txt(wells_to_parts, source_wells, aspirate, dispense)
+    #print_txt(wells_to_parts, source_wells, aspirate, dispense)
     print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume)
 
 def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume):
-    print(wells_to_parts)
 
     with open('constellationinput.json') as file:
         constellation_input_json = json.load(file)
