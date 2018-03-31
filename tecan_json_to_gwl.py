@@ -24,14 +24,15 @@ def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
     if use_hard_coded_well_numbers:
         hard_coded_source_well_nums = get_hard_coded_source_well_numbers()
 
-    wells_to_parts, rc_to_wn = make_source_part_dicts(tecan_directions, hard_coded_source_well_nums)
+    wells_to_parts, rc_to_wn, well_to_vector = make_source_part_dicts(tecan_directions, hard_coded_source_well_nums)
     aspirate, dispense, source_wells, well_to_volume = process_puppeteer_instructions(tecan_directions, rc_to_wn, use_hard_coded_well_numbers)
 
     print_gwl(aspirate, dispense)
     #print_txt(wells_to_parts, source_wells, aspirate, dispense)
-    print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume)
+    print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector)
 
-def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume):
+def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
+    print(well_to_volume)
 
     with open('constellationinput.json') as file:
         constellation_input_json = json.load(file)
@@ -50,20 +51,18 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume):
 
     categories = json.loads(constellation_input_json['categories'])
     used_categories = {}
-    part_volumes = {}
-    for key in categories.keys():
-        used_categories[key] = []
+    for cat in categories.keys():
+        used_categories[cat] = []
 
-    # Make sure all parts sent to constellation get used
+    # Categorize parts and volume based on constellation input
     all_parts = wells_to_parts.values()
-    #part_max_length = max(all_parts, key=len) # use later for spacing
     for part in all_parts:
-        for key,val_list in categories.items():
+        for cat,val_list in categories.items():
             if 'Part-'+part in val_list:
-                used_categories[key].append(part)
-                if part not in part_volumes:
-                    part_volumes[part] = 0
-                break
+                used_categories[cat].append(part)
+
+    # Manually add in vectors because it is not part of the constellation input
+    used_categories['vectors'] = well_to_vector.values()
 
     with open(OUTPUT_EXPERIMENT_SUMMARY, 'w') as file:
         file.write('Source Plate Visualization\n')
@@ -164,6 +163,7 @@ def make_source_part_dicts(puppeteer_output, hard_coded_well_numbers):
 
     wells_to_parts = {}     # hard-coded well_number : part name
     rc_to_wn = {}           # Puppeteer rowcol combo : hard-coded well numbers
+    well_to_vector = {}     # because vectors are not part of constellation input
 
     puppeteer_lines = get_puppeteer_source_part_lines(puppeteer_output)
 
@@ -182,8 +182,11 @@ def make_source_part_dicts(puppeteer_output, hard_coded_well_numbers):
 
             rc_to_wn[str(row) + str(col)] = well_number
 
+            if 'Vector-' in line:
+                well_to_vector[well_number] = part_name
+
     wells_to_parts = collections.OrderedDict(sorted(wells_to_parts.items()))
-    return wells_to_parts, rc_to_wn
+    return wells_to_parts, rc_to_wn, well_to_vector
 
 
 def get_puppeteer_source_part_lines(puppeteer_output):
