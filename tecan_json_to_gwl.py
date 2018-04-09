@@ -2,11 +2,12 @@ import sys
 import json
 import collections
 import string
+import xlwt
 
 # Output file names
 OUTPUT_FILE = 'Tecan_Directions.gwl'
 OUTPUT_FILE_WITH_SOURCE_WELLS = 'Tecan_Directions_with_Source_Part_Assignments.txt'
-OUTPUT_EXPERIMENT_SUMMARY = 'Experiment_Summary.txt'
+OUTPUT_EXPERIMENT_SUMMARY = 'Experiment_Summary.xls'
 
 SOURCEPLATE = 'DNASourcePlate'
 DESTPLATE = 'MoCloDestinationPlate'
@@ -32,7 +33,8 @@ def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
     print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector)
 
 def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
-    print(well_to_volume)
+
+    #TODO delete the old excel if exists
 
     with open('constellationinput.json') as file:
         constellation_input_json = json.load(file)
@@ -64,41 +66,54 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
     # Manually add in vectors because it is not part of the constellation input
     used_categories['vectors'] = well_to_vector.values()
 
-    with open(OUTPUT_EXPERIMENT_SUMMARY, 'w') as file:
-        file.write('Source Plate Visualization\n')
-        file.write('\n')
-        for row in matrix:
-            for val in row:
-                file.write('%12s' % str(val))
-            file.write('\n')
+    #with open(OUTPUT_EXPERIMENT_SUMMARY, 'w') as file:
+    book = xlwt.Workbook()
+    sheet = book.add_sheet("Sheet1")
 
-        file.write('\n')
-        file.write('\n')
-        file.write('Total Plates Used: 1\n')
-        file.write('Number of Assemblies:' + constellation_input_json['numDesigns'] +'\n')
+    r,c = 0, 0
+    sheet.write(r, c, 'Source Plate Visualization')
+    r+=1 # Go to next row
+    for row in matrix:
+        for val in row:
+            if val != 0:
+                sheet.write(r, c, str(val))
+            c+=1
+        r+=1
+        c=0
 
-        file.write('\n')
-        file.write('Reagents Used:\n')
-        indices = [i for i, x in enumerate(all_parts) if 'Master Mix' in x] # get all master mixes
-        for i in indices:
-            master_mix = list(wells_to_parts.items())[i][1]
-            wellnum = list(wells_to_parts.keys())[list(wells_to_parts.values()).index(master_mix)] # get well num from part
+    r+=1
+    c=0
+    sheet.write(r, c, 'Total Plates Used: 1')
+    r+=1
+    sheet.write(r, c, 'Number of Assemblies:' + constellation_input_json['numDesigns'])
+    r+=2
+
+    sheet.write(r, c, 'Reagents Used:')
+    r+=1
+    indices = [i for i, x in enumerate(all_parts) if 'Master Mix' in x] # get all master mixes
+    for i in indices:
+        master_mix = list(wells_to_parts.items())[i][1]
+        wellnum = list(wells_to_parts.keys())[list(wells_to_parts.values()).index(master_mix)] # get well num from part
+        part_vol = well_to_volume[wellnum]
+        sheet.write(r, c, master_mix + ':' + str(part_vol) +'μl')
+        r+=1
+
+    r+=1
+    sheet.write(r, c, 'Parts Used:')
+    r+=2
+    for category, part_list in used_categories.items():
+        sheet.write(r, c, category.upper() + ': ')
+        r+=1
+        for part in part_list:
+            wellnum = list(wells_to_parts.keys())[list(wells_to_parts.values()).index(part)] # get well num from part
             part_vol = well_to_volume[wellnum]
-            file.write(master_mix + ':' + str(part_vol) +'μl\n')
+            sheet.write(r, c, part + ':' + str(part_vol) +'μl')
+            r+=1
+        r+=1
 
-        file.write('\n')
-        file.write('Parts Used:\n')
-        file.write('\n')
-        for category, part_list in used_categories.items():
-            file.write(category.upper() + ': \n')
-            for part in part_list:
-                wellnum = list(wells_to_parts.keys())[list(wells_to_parts.values()).index(part)] # get well num from part
-                part_vol = well_to_volume[wellnum]
-                file.write(part + ':' + str(part_vol) +'μl\n')
-            file.write('\n')
-
-        file.write('\n')
-        file.write('Q-value: \n')
+    r+=1
+    sheet.write(r, c, 'Q-value:')
+    book.save(OUTPUT_EXPERIMENT_SUMMARY)
 
 
 def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_well_numbers):

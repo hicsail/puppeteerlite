@@ -12,7 +12,7 @@ A tool that parses GenBank files according to the user's protocol and design spe
     * Unix:
     [A guide to install Python3 on Unix](http://docs.python-guide.org/en/latest/starting/install3/linux/)
 
-    * MACOS: 
+    * MACOS:
       * Install Homebrew
       ```
       $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -25,14 +25,14 @@ A tool that parses GenBank files according to the user's protocol and design spe
 - Pip
 
     Install using https://pip.pypa.io/en/stable/installing/
-    
-    
+
+
 - Dependencies
- 
-    Additional dependencies can now be installed with pip 
+
+    Additional dependencies can now be installed with pip
 
     ```
-    $ pip install biopython requests
+    $ pip install biopython requests xlwt
     ```
 
 ## Run PuppeteerLite
@@ -49,10 +49,10 @@ $ ./run_puppeteer_lite HeadtoHead2.zip 40
 ```
 
 
-## Input Data 
+## Input Data
 
 - GenBank Files
-  - An example input archive, HeadtoHead2.zip, is in the repository 
+  - An example input archive, HeadtoHead2.zip, is in the repository
   *Zip files must follow the same folder structure*
 - Protocol Specification
   - Puppeteer Lite currently uses the MoClo Assembly Protocol.
@@ -62,10 +62,9 @@ $ ./run_puppeteer_lite HeadtoHead2.zip 40
 ## Output Files
 
 PuppeteerLite writes two files to the local directory:
-- *Tecan_Directions.gwl* 
+- *Tecan_Directions.gwl*
   - Provides Tecan robot instructions.
 - *nGB_Sequences*
   - A directory with n GeneBank files - one for each new design created.
 - *Experiment_Summary.txt*
   - Provides a visual of source plate assignments and lists parts used.
-  
