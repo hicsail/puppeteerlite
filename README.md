@@ -66,5 +66,5 @@ PuppeteerLite writes two files to the local directory:
   - Provides Tecan robot instructions.
 - *nGB_Sequences*
   - A directory with n GeneBank files - one for each new design created.
-- *Experiment_Summary.txt*
+- *Experiment_Summary.xsl*
   - Provides a visual of source plate assignments and lists parts used.
