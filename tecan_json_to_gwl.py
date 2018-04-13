@@ -112,7 +112,9 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
         r+=1
 
     r+=1
-    sheet.write(r, c, 'Q-value:')
+    sheet.write(r, c, 'Q-Cost: 1.081301459')
+    r+=1
+    sheet.write(r, c, 'Q-Time: 2.028571429')
     book.save(OUTPUT_EXPERIMENT_SUMMARY)
 
 
