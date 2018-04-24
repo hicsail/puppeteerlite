@@ -67,4 +67,4 @@ PuppeteerLite writes two files to the local directory:
 - *nGB_Sequences*
   - A directory with n GeneBank files - one for each new design created.
 - *Experiment_Summary.xsl*
-  - Provides a visual of source plate assignments and lists parts used.
+  - Provides a visual of source plate assignments, output plate, and lists parts used.

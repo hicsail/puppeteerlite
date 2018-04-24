@@ -3,6 +3,7 @@ import json
 import collections
 import string
 import xlwt
+import copy
 
 # Output file names
 OUTPUT_FILE = 'Tecan_Directions.gwl'
@@ -34,18 +35,18 @@ def tecan_json_to_gwl(response_json, use_hard_coded_well_numbers):
 
 def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
 
-    #TODO delete the old excel if exists
-
     with open('constellationinput.json') as file:
         constellation_input_json = json.load(file)
 
-    # populating matrix for visual
+    # populating matrix for input plate visual
     row_count, col_count = 9, 13
     matrix = [[0 for x in range(col_count)] for y in range(row_count)]
     for i in range(1,9): # plate letters
         matrix[i][0] = chr(i+64)
     for i in range(1,13): # plate numbers
         matrix[0][i] = i
+
+    output_plate_matrix = copy.deepcopy(matrix) # reuse plate for output visual
 
     for wellnum, part in wells_to_parts.items():
         row,col = get_wellnum_to_matrix(wellnum)
@@ -68,7 +69,7 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
 
     #with open(OUTPUT_EXPERIMENT_SUMMARY, 'w') as file:
     book = xlwt.Workbook()
-    sheet = book.add_sheet("Sheet1")
+    sheet = book.add_sheet("Input Summary")
 
     r,c = 0, 0
     sheet.write(r, c, 'Source Plate Visualization')
@@ -115,8 +116,32 @@ def print_exp_summary(wells_to_parts, rc_to_wn, well_to_volume, well_to_vector):
     sheet.write(r, c, 'Q-Cost: 1.081301459')
     r+=1
     sheet.write(r, c, 'Q-Time: 2.028571429')
+
+    write_output_visual(book, output_plate_matrix, int(constellation_input_json['numDesigns']))
     book.save(OUTPUT_EXPERIMENT_SUMMARY)
 
+def write_output_visual(book, plate_matrix, num_designs):
+    # will break if designs are greater than cells in plate
+    output_sheet = book.add_sheet("Output Plate")
+    row, col = 1, 1
+    row_count = 9
+    for i in range(1, num_designs+1):
+        if row == row_count:
+            row = 1
+            col += 1
+        plate_matrix[row][col] = 'design' + str(i)
+        row += 1
+
+    r, c = 0, 0
+    output_sheet.write(r, c, 'Destination Plate Visualization')
+    r += 1 # Go to next row
+    for row in plate_matrix:
+        for val in row:
+            if val != 0:
+                output_sheet.write(r, c, val)
+            c += 1
+        r += 1
+        c = 0
 
 def process_puppeteer_instructions(puppeteer_output, rc_to_wn, use_hard_coded_well_numbers):
     '''
