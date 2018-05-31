@@ -125,7 +125,7 @@ def write_output_visual(book, plate_matrix, num_designs):
     output_sheet = book.add_sheet("Output Plate")
     row, col = 1, 1
     row_count = 9
-    for i in range(1, num_designs+1):
+    for i in range(0, num_designs):
         if row == row_count:
             row = 1
             col += 1
