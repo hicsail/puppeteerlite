@@ -1,6 +1,8 @@
 # PuppeteerLite
 
-A tool that parses GenBank files according to the user's protocol and design specifications, and prints Tecan robot instructions in gwl format.
+The codebase for PuppeteerLite is intended as a proof of concept for users to replicate the results shown in the manuscript, using the example files supplied in the Supplemental Section.
+
+A full web based version of Puppeteer is currently in development.
 
 ## Requirements
 
@@ -39,25 +41,31 @@ A tool that parses GenBank files according to the user's protocol and design spe
 
 - Clone or download this repository    
 
+- Detailed installation instructions are included in this repository for MacOS and Windows - Run_Puppeteer_MacOS_for_Biologists.docx and Run_Puppeteer_Windows_for_Biologists.docx
+
 - Enter the commands below to run Puppeteer Lite.
 The format is as follows:  "./run_puppeteer_lite  [input archive] [number of designs requested]"
-The example below uses the 'HeadtoHead2.zip' input archive and requests 40 combinatorial designs.
+The example below uses the 'HeadtoHead2.zip' input archive and requests 42 combinatorial designs.
 The input archive must be in the same directory in which the user runs commands.
 ```
 $ chmod u+x run_puppeteer_lite
-$ ./run_puppeteer_lite HeadtoHead2.zip 40
+$ ./run_puppeteer_lite HeadtoHead2.zip 42
 ```
-
 
 ## Input Data
 
 - GenBank Files
   - An example input archive, HeadtoHead2.zip, is in the repository
   *Zip files must follow the same folder structure*
-- Protocol Specification
-  - Puppeteer Lite currently uses the MoClo Assembly Protocol.
-- Design Specification
-  - Puppeteer Lite currently assumes the following design specification: 'promoter.rbs.cds.terminator'.
+
+
+## Process
+- PuppeteerLite currently uses the MoClo Assembly Protocol.
+
+- The PuppeteerLite scripts in this repository parses the input data and calls [Constellation](https://github.com/hicsail/constellation-js), a combinatorial design engine, to enumerate circuit designs with the specification "promoter then rbs then cds then terminator".     
+
+-  When the designs are returned, a backend engine is called to generate the build instructions, which is then parsed by PuppeteerLite to produce the output indicated below.
+
 
 ## Output Files
 
