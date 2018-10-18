@@ -5,33 +5,9 @@ The codebase for PuppeteerLite is intended as a proof of concept for users to re
 A full web based version of Puppeteer is currently in development.
 
 ## Requirements
-
 - Python3
-    * Windows:   
-        * [Windows Download Link](https://www.python.org/downloads/)
-        * [Windows Install Link](https://www.howtogeek.com/197947/how-to-install-python-on-windows/)
-
-    * Unix:
-    [A guide to install Python3 on Unix](http://docs.python-guide.org/en/latest/starting/install3/linux/)
-
-    * MACOS:
-      * Install Homebrew
-      ```
-      $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-      ```
-      * Install Python3
-      ```
-      $ brew install python3
-      ```
-
 - Pip
-
-    Install using https://pip.pypa.io/en/stable/installing/
-
-
 - Dependencies
-
-    Additional dependencies can now be installed with pip
 
     ```
     $ pip install biopython requests xlwt
@@ -41,7 +17,9 @@ A full web based version of Puppeteer is currently in development.
 
 - Clone or download this repository    
 
-- Detailed installation instructions are included in this repository for MacOS and Windows - Run_Puppeteer_MacOS_for_Biologists.docx and Run_Puppeteer_Windows_for_Biologists.docx
+- Detailed installation instructions are included in this repository for MacOS and Windows, see    
+  *Run_Puppeteer_MacOS_for_Biologists.docx* or       
+  *Run_Puppeteer_Windows_for_Biologists.docx*    
 
 - Enter the commands below to run Puppeteer Lite.
 The format is as follows:  "./run_puppeteer_lite  [input archive] [number of designs requested]"
@@ -69,10 +47,10 @@ $ ./run_puppeteer_lite HeadtoHead2.zip 42
 
 ## Output Files
 
-PuppeteerLite writes two files to the local directory:
+PuppeteerLite writes the following files to the local directory:
 - *Tecan_Directions.gwl*
   - Provides Tecan robot instructions.
 - *nGB_Sequences*
-  - A directory with n GeneBank files - one for each new design created.
+  - A directory with n GenBank files - one for each new design created.
 - *Experiment_Summary.xsl*
   - Provides a visual of source plate assignments, output plate, and lists parts used.
